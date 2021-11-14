@@ -7,25 +7,33 @@ class MyFrame(wx.Frame):
 
     def __init__(self):
         super().__init__(parent=None, title='Capacity Calculator')
+        self.SetSize(wx.Size(600, -1))
         panel = wx.Panel(self)
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+
+        csvSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, panel, "CSV")
 
         loadBtn = wx.Button(panel, label='Load CSV file')
         loadBtn.Bind(wx.EVT_BUTTON, self.loadFile)
-        sizer.Add(loadBtn, 0, wx.ALL | wx.CENTER, 5)
+        csvSizer.Add(loadBtn, 0, wx.ALL | wx.RIGHT, 5)
 
-        self.textCtrlCsv = wx.TextCtrl(panel, style=wx.TE_READONLY)
-        sizer.Add(self.textCtrlCsv, 0, wx.ALL | wx.EXPAND, 5)
+        self.textCtrlCsv = wx.TextCtrl(panel, style=wx.TE_READONLY|wx.TE_RIGHT, size=(450, -1))
+        csvSizer.Add(self.textCtrlCsv, 0, wx.ALL | wx.EXPAND, 5)
+        mainSizer.Add(csvSizer, 0, wx.ALL | wx.EXPAND, 5)
 
-        capaBtn = wx.Button(panel, label='Compute Capacity')
+        capaSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, panel, "Capacity")
+
+        capaBtn = wx.Button(panel, label='Compute')
         capaBtn.Bind(wx.EVT_BUTTON, self.compute)
-        sizer.Add(capaBtn, 0, wx.ALL | wx.CENTER, 5)
+        capaSizer.Add(capaBtn, 0, wx.ALL | wx.RIGHT, 5)
 
         self.textCtrlCapa = wx.TextCtrl(panel, style=wx.TE_READONLY)
-        sizer.Add(self.textCtrlCapa, 0, wx.ALL | wx.EXPAND, 5)
+        capaSizer.Add(self.textCtrlCapa, 0, wx.ALL | wx.EXPAND, 5)
+        mainSizer.Add(capaSizer, 0, wx.ALL | wx.EXPAND, 5)
+
         self.textCtrlCapa.SetValue("0")
 
-        panel.SetSizer(sizer)
+        panel.SetSizer(mainSizer)
         self.Show()
 
 
