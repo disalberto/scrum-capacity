@@ -3,14 +3,16 @@ from capacity import computeCapacity
 
 class MyFrame(wx.Frame):
 
+    DAFAULT_SPRINT_DAYS="15"
     filepath=''
 
     def __init__(self):
-        super().__init__(parent=None, title='Capacity Calculator')
+        super().__init__(parent=None, title='Orazio - The Capacity Calculator')
         self.SetSize(wx.Size(600, -1))
         panel = wx.Panel(self)
         mainSizer = wx.BoxSizer(wx.VERTICAL)
 
+        # CSV part
         csvSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, panel, "CSV")
 
         loadBtn = wx.Button(panel, label='Load CSV file')
@@ -21,7 +23,16 @@ class MyFrame(wx.Frame):
         csvSizer.Add(self.textCtrlCsv, 0, wx.ALL | wx.EXPAND, 5)
         mainSizer.Add(csvSizer, 0, wx.ALL | wx.EXPAND, 5)
 
+        # Capacity part
         capaSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, panel, "Capacity")
+
+        daysLabel = wx.StaticText(panel,-1,style = wx.ALIGN_RIGHT)
+        daysLabel.SetLabel("Sprint Days:")
+        capaSizer.Add(daysLabel, 0, wx.ALL | wx.EXPAND, 5)
+
+        self.textCtrlDays = wx.TextCtrl(panel)
+        self.textCtrlDays.SetValue(self.DAFAULT_SPRINT_DAYS)
+        capaSizer.Add(self.textCtrlDays, 0, wx.ALL | wx.EXPAND, 5)
 
         capaBtn = wx.Button(panel, label='Compute')
         capaBtn.Bind(wx.EVT_BUTTON, self.compute)
@@ -56,7 +67,7 @@ class MyFrame(wx.Frame):
             print("Please load a csv file first!")
         else:
             print(self.filepath)
-            self.textCtrlCapa.SetValue(str(computeCapacity(self.filepath)))
+            self.textCtrlCapa.SetValue(str(computeCapacity(self.filepath, int(self.textCtrlDays.GetValue()))))
 
 
 if __name__ == '__main__':
