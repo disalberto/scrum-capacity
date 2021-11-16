@@ -1,10 +1,6 @@
 import wx
 import wx.grid
 import csv
-from csv import DictReader
-from dataclasses import dataclass
-from person import Member
-
 
 def getTable(panel: wx.Panel, inputFile: str):
     grid = wx.grid.Grid(panel)
