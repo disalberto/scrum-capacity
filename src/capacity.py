@@ -1,16 +1,8 @@
 from csv import DictReader
-from dataclasses import dataclass
+from person import Member
 
 SCRUM_FACTOR=0.8
 ROUND_PRECISION=2
-
-@dataclass
-class Member:
-    name: str
-    daysOff: int
-    trainingDays: int
-    activity: int
-
 
 def computeCapacity(inputFile: str, sprintDays: str):
     capacity=0

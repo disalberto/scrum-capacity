@@ -1,50 +1,50 @@
 import wx
 from capacity import computeCapacity
+from table import getTable
 
 class MyFrame(wx.Frame):
 
-    DAFAULT_SPRINT_DAYS="15"
-    filepath=''
+    DAFAULT_SPRINT_DAYS = "15"
+    filepath = ''
 
     def __init__(self):
-        super().__init__(parent=None, title='Orazio - The Capacity Calculator')
-        self.SetSize(wx.Size(600, -1))
-        panel = wx.Panel(self)
-        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        super().__init__(parent=None, title='oRatio - The Capacity Calculator')
+        self.SetSize(wx.Size(600, 500))
+        self.panel = wx.Panel(self)
+        self.mainSizer = wx.BoxSizer(wx.VERTICAL)
 
         # CSV part
-        csvSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, panel, "CSV")
+        csvSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, "CSV")
 
-        loadBtn = wx.Button(panel, label='Load CSV file')
+        loadBtn = wx.Button(self.panel, label='Load CSV file')
         loadBtn.Bind(wx.EVT_BUTTON, self.loadFile)
         csvSizer.Add(loadBtn, 0, wx.ALL | wx.RIGHT, 5)
 
-        self.textCtrlCsv = wx.TextCtrl(panel, style=wx.TE_READONLY|wx.TE_RIGHT, size=(450, -1))
+        self.textCtrlCsv = wx.TextCtrl(self.panel, style=wx.TE_READONLY|wx.TE_RIGHT, size=(450, -1))
         csvSizer.Add(self.textCtrlCsv, 0, wx.ALL | wx.EXPAND, 5)
-        mainSizer.Add(csvSizer, 0, wx.ALL | wx.EXPAND, 5)
+        self.mainSizer.Add(csvSizer, 0, wx.ALL | wx.EXPAND, 5)
 
         # Capacity part
-        capaSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, panel, "Capacity")
+        capaSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, "Capacity")
 
-        daysLabel = wx.StaticText(panel,-1,style = wx.ALIGN_RIGHT)
+        daysLabel = wx.StaticText(self.panel,-1,style = wx.ALIGN_RIGHT)
         daysLabel.SetLabel("Sprint Days:")
         capaSizer.Add(daysLabel, 0, wx.ALL | wx.EXPAND, 5)
 
-        self.textCtrlDays = wx.TextCtrl(panel)
+        self.textCtrlDays = wx.TextCtrl(self.panel)
         self.textCtrlDays.SetValue(self.DAFAULT_SPRINT_DAYS)
         capaSizer.Add(self.textCtrlDays, 0, wx.ALL | wx.EXPAND, 5)
 
-        capaBtn = wx.Button(panel, label='Compute')
+        capaBtn = wx.Button(self.panel, label='Compute')
         capaBtn.Bind(wx.EVT_BUTTON, self.compute)
         capaSizer.Add(capaBtn, 0, wx.ALL | wx.RIGHT, 5)
 
-        self.textCtrlCapa = wx.TextCtrl(panel, style=wx.TE_READONLY)
-        capaSizer.Add(self.textCtrlCapa, 0, wx.ALL | wx.EXPAND, 5)
-        mainSizer.Add(capaSizer, 0, wx.ALL | wx.EXPAND, 5)
-
+        self.textCtrlCapa = wx.TextCtrl(self.panel, style=wx.TE_READONLY)
         self.textCtrlCapa.SetValue("0")
+        capaSizer.Add(self.textCtrlCapa, 0, wx.ALL | wx.EXPAND, 5)
+        self.mainSizer.Add(capaSizer, 0, wx.ALL | wx.EXPAND, 5)
 
-        panel.SetSizer(mainSizer)
+        self.panel.SetSizer(self.mainSizer)
         self.Show()
 
 
@@ -55,10 +55,16 @@ class MyFrame(wx.Frame):
         openFileDialog.ShowModal()
         openFileDialog.GetPath()
 
-        self.textCtrlCsv.SetValue(openFileDialog.GetPath())
         self.filepath = openFileDialog.GetPath()
+        self.textCtrlCsv.SetValue(self.filepath)
 
         openFileDialog.Destroy()
+
+        grid = getTable(self.panel, self.filepath)
+        self.mainSizer.Add(grid, 0, wx.ALL | wx.EXPAND, 5)
+
+        self.SetSizerAndFit(self.mainSizer)
+        #self.GetParent().Fit()
 
 
     def compute(self, event):
