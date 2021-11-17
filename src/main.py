@@ -33,11 +33,12 @@ class MyFrame(wx.Frame):
 
         self.textCtrlDays = wx.TextCtrl(self.panel)
         self.textCtrlDays.SetValue(self.DAFAULT_SPRINT_DAYS)
+        self.textCtrlDays.Bind(wx.EVT_TEXT, self.compute)
         capaSizer.Add(self.textCtrlDays, 0, wx.ALL | wx.EXPAND, 5)
 
-        capaBtn = wx.Button(self.panel, label='Compute')
-        capaBtn.Bind(wx.EVT_BUTTON, self.compute)
-        capaSizer.Add(capaBtn, 0, wx.ALL | wx.RIGHT, 5)
+        capaLabel = wx.StaticText(self.panel,-1,style = wx.ALIGN_RIGHT)
+        capaLabel.SetLabel("Capacity:")
+        capaSizer.Add(capaLabel, 0, wx.ALL | wx.RIGHT, 5)
 
         self.textCtrlCapa = wx.TextCtrl(self.panel, style=wx.TE_READONLY)
         self.textCtrlCapa.SetValue("0")
@@ -63,6 +64,10 @@ class MyFrame(wx.Frame):
         grid = getTable(self.panel, self.filepath)
         self.mainSizer.Add(grid, 0, wx.ALL | wx.EXPAND, 5)
 
+        # Compute capacity
+        self.textCtrlCapa.SetValue(str(computeCapacity(self.filepath, int(self.textCtrlDays.GetValue()))))
+
+        # Refresh ui
         self.SetSizerAndFit(self.mainSizer)
         #self.GetParent().Fit()
 
