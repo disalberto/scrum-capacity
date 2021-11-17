@@ -1,6 +1,7 @@
 import wx
 from capacity import computeCapacity
 from table import getTable
+from member import MemberList
 
 class MyFrame(wx.Frame):
 
@@ -13,16 +14,16 @@ class MyFrame(wx.Frame):
         self.panel = wx.Panel(self)
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
 
-        # CSV part
-        csvSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, "CSV")
+        # JSON part
+        jsonSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, "JSON")
 
-        loadBtn = wx.Button(self.panel, label='Load CSV file')
+        loadBtn = wx.Button(self.panel, label='Load JSON file')
         loadBtn.Bind(wx.EVT_BUTTON, self.loadFile)
-        csvSizer.Add(loadBtn, 0, wx.ALL | wx.RIGHT, 5)
+        jsonSizer.Add(loadBtn, 0, wx.ALL | wx.RIGHT, 5)
 
-        self.textCtrlCsv = wx.TextCtrl(self.panel, style=wx.TE_READONLY|wx.TE_RIGHT, size=(450, -1))
-        csvSizer.Add(self.textCtrlCsv, 0, wx.ALL | wx.EXPAND, 5)
-        self.mainSizer.Add(csvSizer, 0, wx.ALL | wx.EXPAND, 5)
+        self.textCtrlJson = wx.TextCtrl(self.panel, style=wx.TE_READONLY|wx.TE_RIGHT, size=(450, -1))
+        jsonSizer.Add(self.textCtrlJson, 0, wx.ALL | wx.EXPAND, 5)
+        self.mainSizer.Add(jsonSizer, 0, wx.ALL | wx.EXPAND, 5)
 
         # Capacity part
         capaSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, "Capacity")
@@ -51,21 +52,23 @@ class MyFrame(wx.Frame):
 
     def loadFile(self, event):
         openFileDialog = wx.FileDialog(self, "Open", "", "",
-                                       "Csv files (*.csv)|*.csv",
+                                       "JSON files (*.json)|*.json",
                                        wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+
         openFileDialog.ShowModal()
-        openFileDialog.GetPath()
 
         self.filepath = openFileDialog.GetPath()
-        self.textCtrlCsv.SetValue(self.filepath)
+        self.textCtrlJson.SetValue(self.filepath)
 
         openFileDialog.Destroy()
 
-        grid = getTable(self.panel, self.filepath)
+        self.mList = MemberList.parse_file(openFileDialog.GetPath()).__root__
+
+        grid = getTable(self.panel, self.mList)
         self.mainSizer.Add(grid, 0, wx.ALL | wx.EXPAND, 5)
 
         # Compute capacity
-        self.textCtrlCapa.SetValue(str(computeCapacity(self.filepath, int(self.textCtrlDays.GetValue()))))
+        self.textCtrlCapa.SetValue(str(computeCapacity(self.mList, int(self.textCtrlDays.GetValue()))))
 
         # Refresh ui
         self.SetSizerAndFit(self.mainSizer)
@@ -77,8 +80,7 @@ class MyFrame(wx.Frame):
         if not value:
             print("Please load a csv file first!")
         else:
-            print(self.filepath)
-            self.textCtrlCapa.SetValue(str(computeCapacity(self.filepath, int(self.textCtrlDays.GetValue()))))
+            self.textCtrlCapa.SetValue(str(computeCapacity(self.mList, int(self.textCtrlDays.GetValue()))))
 
 
 if __name__ == '__main__':

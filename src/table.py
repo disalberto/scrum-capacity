@@ -5,11 +5,9 @@ import csv
 from pydantic import BaseModel, ValidationError
 from member import Member, MemberList, Columns
 
-def getTable(panel: wx.Panel, inputFile: str):
+def getTable(panel: wx.Panel, mList: MemberList):
     grid = wx.grid.Grid(panel)
     grid.SetDefaultColSize (130)
-
-    mList = MemberList.parse_file("team.json").__root__
 
     grid.CreateGrid(len(mList), len(Columns))
 
