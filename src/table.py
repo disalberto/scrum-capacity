@@ -2,26 +2,25 @@ import wx
 import wx.grid
 import csv
 
+from pydantic import BaseModel, ValidationError
+from member import Member, MemberList, Columns
+
 def getTable(panel: wx.Panel, inputFile: str):
     grid = wx.grid.Grid(panel)
-    grid.SetDefaultColSize (120)
-    with open("team.csv", 'r') as team:
-        reader = csv.reader(team,delimiter=",")
-        columns: [] = next(reader)
-        ncol = len(columns)
-        #team.seek(0)
-        rows: List = list(reader)
-        nrow = len(rows)
+    grid.SetDefaultColSize (130)
 
-        grid.CreateGrid(nrow, ncol)
+    mList = MemberList.parse_file("team.json").__root__
 
-        for i in range(ncol):
-            grid.SetColLabelValue(i, columns[i])
+    grid.CreateGrid(len(mList), len(Columns))
 
-        for j in range(nrow):
-            jrow = rows[j]
-            #grid.SetRowLabelValue(j, jrow[0])
-            for k in range(len(jrow)):
-                grid.SetCellValue(j,k,jrow[k])
+    for col in Columns:
+        grid.SetColLabelValue(int(col), col.name)
+
+    for member in mList:
+        grid.SetCellValue(mList.index(member), int(Columns.NAME), member.name)
+        grid.SetCellValue(mList.index(member), int(Columns.DAYS_OFF), str(member.daysOff))
+        grid.SetCellValue(mList.index(member), int(Columns.TRAINING_DAYS), str(member.trainingDays))
+        grid.SetCellValue(mList.index(member), int(Columns.ACTIVITY), str(member.activity))
+
     return grid
 

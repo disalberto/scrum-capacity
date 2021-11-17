@@ -12,7 +12,7 @@ def computeCapacity(inputFile: str, sprintDays: str):
             member = Member(**row)
             mCapa = memberCapacity(member, sprintDays)
             capacity+=mCapa
-            print("Team member: " + member.name + " - Capacity in Story Points: " + str(mCapa))
+            #print("Team member: " + member.name + " - Capacity in Story Points: " + str(mCapa))
     return round(capacity, ROUND_PRECISION)
 
 
