@@ -1,12 +1,12 @@
 import wx
-from capacity import computeCapacity
-from table import getTable
+from capacity import compute_capacity
+from table import MyGrid
 from member import MemberList
+from event import EVT_MEMBER_UPDATED
 
 class MyFrame(wx.Frame):
 
     DAFAULT_SPRINT_DAYS = "15"
-    filepath = ''
 
     def __init__(self):
         super().__init__(parent=None, title='oRatio - The Capacity Calculator')
@@ -62,26 +62,20 @@ class MyFrame(wx.Frame):
 
         openFileDialog.Destroy()
 
-        self.mList = MemberList.parse_file(openFileDialog.GetPath()).__root__
-
-        grid = getTable(self.panel, self.mList)
-        self.mainSizer.Add(grid, 0, wx.ALL | wx.EXPAND, 5)
+        self.grid = MyGrid(self.panel, MemberList.parse_file(openFileDialog.GetPath()).__root__)
+        self.mainSizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
+        self.grid.Bind(EVT_MEMBER_UPDATED, self.compute)
 
         # Compute capacity
-        self.textCtrlCapa.SetValue(str(computeCapacity(self.mList, int(self.textCtrlDays.GetValue()))))
+        self.textCtrlCapa.SetValue(str(compute_capacity(MemberList.parse_file(openFileDialog.GetPath()).__root__,
+                                                        int(self.textCtrlDays.GetValue()))))
 
         # Refresh ui
         self.SetSizerAndFit(self.mainSizer)
-        #self.GetParent().Fit()
 
 
     def compute(self, event):
-        value = self.filepath
-        if not value:
-            print("Please load a csv file first!")
-        else:
-            self.textCtrlCapa.SetValue(str(computeCapacity(self.mList, int(self.textCtrlDays.GetValue()))))
-
+        self.textCtrlCapa.SetValue(str(compute_capacity(self.grid.list, int(self.textCtrlDays.GetValue()))))
 
 if __name__ == '__main__':
     app = wx.App()
