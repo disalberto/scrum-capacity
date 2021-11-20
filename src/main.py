@@ -13,6 +13,7 @@ class MyFrame(wx.Frame):
         self.SetSize(wx.Size(600, 500))
         self.panel = wx.Panel(self)
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
+        self._team_table: wx.SizerItem = None
 
         # JSON part
         jsonSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, "JSON")
@@ -46,6 +47,10 @@ class MyFrame(wx.Frame):
         capaSizer.Add(self.textCtrlCapa, 0, wx.ALL | wx.EXPAND, 5)
         self.mainSizer.Add(capaSizer, 0, wx.ALL | wx.EXPAND, 5)
 
+        # Table part
+        self.tableSizer = wx.BoxSizer(wx.VERTICAL)
+        self.mainSizer.Add(self.tableSizer, 0, wx.ALL | wx.EXPAND, 5)
+
         self.panel.SetSizer(self.mainSizer)
         self.Show()
 
@@ -56,26 +61,54 @@ class MyFrame(wx.Frame):
                                        wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         openFileDialog.ShowModal()
-
-        self.filepath = openFileDialog.GetPath()
-        self.textCtrlJson.SetValue(self.filepath)
-
+        self.textCtrlJson.SetValue(openFileDialog.GetPath())
         openFileDialog.Destroy()
 
         self.grid = MyGrid(self.panel, MemberList.parse_file(openFileDialog.GetPath()).__root__)
-        self.mainSizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
         self.grid.Bind(EVT_MEMBER_UPDATED, self.compute)
+        self.grid.Bind(EVT_MEMBER_UPDATED, self.enable_save)
+
+        if self._team_table != None:
+            self.delete_all_children_from_sizer(self.tableSizer)
+
+        self._team_table = self.tableSizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
+        self.add_button_save()
+
+        self.mainSizer.Layout()
 
         # Compute capacity
         self.textCtrlCapa.SetValue(str(compute_capacity(MemberList.parse_file(openFileDialog.GetPath()).__root__,
                                                         int(self.textCtrlDays.GetValue()))))
-
         # Refresh ui
         self.SetSizerAndFit(self.mainSizer)
 
 
     def compute(self, event):
-        self.textCtrlCapa.SetValue(str(compute_capacity(self.grid.list, int(self.textCtrlDays.GetValue()))))
+        self.textCtrlCapa.SetValue(str(compute_capacity(self.grid._list, int(self.textCtrlDays.GetValue()))))
+
+
+    def enable_save(self, event):
+        self.saveBtn.Enable()
+
+    #TODO to be fixed
+    def save_file(self, event):
+        mlist: MemberList = self.grid._list
+        new_json = mlist.json()
+        print(new_json)
+
+
+    def delete_all_children_from_sizer(self, sizer):
+        for child in sizer.GetChildren():
+            child.GetWindow().Destroy()
+
+
+    def add_button_save(self):
+        self.saveBtn = wx.Button(self.panel, label='Save table to JSON file')
+        self.saveBtn.Disable()
+        self.saveBtn.Bind(wx.EVT_BUTTON, self.save_file)
+        self.tableSizer.Add(self.saveBtn, 0, wx.LEFT, 5)
+        self.SetSizerAndFit(self.mainSizer)
+
 
 if __name__ == '__main__':
     app = wx.App()
