@@ -49,7 +49,7 @@ class MyGrid(wx.grid.Grid):
         # Send event for updating the capacity
         wx.PostEvent(self, MemberUpdatedEvent())
 
-        print("Updated List: " + str(self._list))
+        #print("Updated List: " + str(self._list))
 
 
     def later(self):

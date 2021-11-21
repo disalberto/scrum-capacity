@@ -14,6 +14,7 @@ class MyFrame(wx.Frame):
         self.panel = wx.Panel(self)
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
         self._team_table: wx.SizerItem = None
+        self._content_not_saved: bool = False
 
         # JSON part
         jsonSizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, "JSON")
@@ -35,7 +36,7 @@ class MyFrame(wx.Frame):
 
         self.textCtrlDays = wx.TextCtrl(self.panel)
         self.textCtrlDays.SetValue(self.DAFAULT_SPRINT_DAYS)
-        self.textCtrlDays.Bind(wx.EVT_TEXT, self.compute)
+        self.textCtrlDays.Bind(wx.EVT_TEXT, self.on_update_days)
         capaSizer.Add(self.textCtrlDays, 0, wx.ALL | wx.EXPAND, 5)
 
         capaLabel = wx.StaticText(self.panel,-1,style = wx.ALIGN_RIGHT)
@@ -56,45 +57,68 @@ class MyFrame(wx.Frame):
 
 
     def loadFile(self, event):
-        openFileDialog = wx.FileDialog(self, "Open", "", "",
-                                       "JSON files (*.json)|*.json",
-                                       wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
-        openFileDialog.ShowModal()
-        self.textCtrlJson.SetValue(openFileDialog.GetPath())
-        openFileDialog.Destroy()
+        if self._content_not_saved:
+            if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
+                             wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                return
 
-        self.grid = MyGrid(self.panel, MemberList.parse_file(openFileDialog.GetPath()).__root__)
-        self.grid.Bind(EVT_MEMBER_UPDATED, self.compute)
-        self.grid.Bind(EVT_MEMBER_UPDATED, self.enable_save)
+        with wx.FileDialog(self, "Open", "", "", "JSON files (*.json)|*.json",
+                                       wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
 
-        if self._team_table != None:
-            self.delete_all_children_from_sizer(self.tableSizer)
+            pathname = fileDialog.GetPath()
+            self.textCtrlJson.SetValue(pathname)
+            try:
+                self.grid = MyGrid(self.panel, MemberList.parse_file(pathname).__root__)
+            except IOError:
+                wx.LogError("Cannot open file '%s'." % pathname)
 
-        self._team_table = self.tableSizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
-        self.add_button_save()
+            self.grid.Bind(EVT_MEMBER_UPDATED, self.on_update_table)
 
-        self.mainSizer.Layout()
+            if self._team_table != None:
+                self.delete_all_children_from_sizer(self.tableSizer)
 
-        # Compute capacity
-        self.textCtrlCapa.SetValue(str(compute_capacity(MemberList.parse_file(openFileDialog.GetPath()).__root__,
-                                                        int(self.textCtrlDays.GetValue()))))
-        # Refresh ui
-        self.SetSizerAndFit(self.mainSizer)
+            self._team_table = self.tableSizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
+            self.add_button_save()
+
+            self.mainSizer.Layout()
+
+            # Compute capacity
+            self.textCtrlCapa.SetValue(str(compute_capacity(MemberList.parse_file(pathname).__root__,
+                                                            int(self.textCtrlDays.GetValue()))))
+            # Refresh ui
+            self.SetSizerAndFit(self.mainSizer)
 
 
-    def compute(self, event):
-        self.textCtrlCapa.SetValue(str(compute_capacity(self.grid._list, int(self.textCtrlDays.GetValue()))))
-
-
-    def enable_save(self, event):
-        self.saveBtn.Enable()
-
-    #TODO to be fixed
     def save_file(self, event):
-        mlist: MemberList = self.grid._list
+        mlist: MemberList = MemberList(__root__ = self.grid._list)
         new_json = mlist.json()
-        print(new_json)
+
+        with wx.FileDialog(self, "Save table to JSON file", wildcard="JSON files (*.json)|*.json",
+                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+
+            pathname = fileDialog.GetPath()
+            try:
+                with open(pathname, 'w') as file:
+                    file.write(new_json)
+            except IOError:
+                wx.LogError("Cannot save current data in file '%s'." % pathname)
+
+        self._content_not_saved = False
+
+
+    def on_update_table(self, event):
+        self.textCtrlCapa.SetValue(str(compute_capacity(self.grid._list, int(self.textCtrlDays.GetValue()))))
+        self.saveBtn.Enable()
+        self._content_not_saved = True
+
+    def on_update_days(self, event):
+        self.textCtrlCapa.SetValue(str(compute_capacity(self.grid._list, int(self.textCtrlDays.GetValue()))))
 
 
     def delete_all_children_from_sizer(self, sizer):
