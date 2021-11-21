@@ -7,44 +7,43 @@ from event import EVT_MEMBER_UPDATED
 class MyFrame(wx.Frame):
 
     DAFAULT_SPRINT_DAYS = "15"
+    DEFAULT_EMPTY_TEAM_PATH = "../src/default_team.json"
 
     def __init__(self):
         """ Initialize the main Frame with all the UI content. """
         super().__init__(parent=None, title='oRatio - The Capacity Calculator')
-        self.SetSize(wx.Size(600, 500))
-        self.panel = wx.Panel(self)
         self.main_sizer = wx.BoxSizer(wx.VERTICAL)
         self._team_table: wx.SizerItem = None
         self._content_not_saved: bool = False
 
         # JSON part
-        json_sizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, "JSON")
+        json_sizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self, "JSON")
 
-        load_btn = wx.Button(self.panel, label='Load JSON file')
+        load_btn = wx.Button(self, label='Load JSON file')
         load_btn.Bind(wx.EVT_BUTTON, self.load_file)
         json_sizer.Add(load_btn, 0, wx.ALL | wx.RIGHT, 5)
 
-        self.text_ctrl_json = wx.TextCtrl(self.panel, style=wx.TE_READONLY|wx.TE_RIGHT, size=(450, -1))
+        self.text_ctrl_json = wx.TextCtrl(self, style=wx.TE_READONLY|wx.TE_RIGHT, size=(450, -1))
         json_sizer.Add(self.text_ctrl_json, 0, wx.ALL | wx.EXPAND, 5)
         self.main_sizer.Add(json_sizer, 0, wx.ALL | wx.EXPAND, 5)
 
         # Capacity part
-        capa_sizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, "Capacity")
+        capa_sizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self, "Capacity")
 
-        days_label = wx.StaticText(self.panel,-1,style = wx.ALIGN_RIGHT)
+        days_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
         days_label.SetLabel("Sprint Days:")
         capa_sizer.Add(days_label, 0, wx.ALL | wx.EXPAND, 5)
 
-        self.text_ctrl_days = wx.TextCtrl(self.panel)
+        self.text_ctrl_days = wx.TextCtrl(self)
         self.text_ctrl_days.SetValue(self.DAFAULT_SPRINT_DAYS)
         self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_days)
         capa_sizer.Add(self.text_ctrl_days, 0, wx.ALL | wx.EXPAND, 5)
 
-        capa_label = wx.StaticText(self.panel,-1,style = wx.ALIGN_RIGHT)
+        capa_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
         capa_label.SetLabel("Capacity:")
         capa_sizer.Add(capa_label, 0, wx.ALL | wx.RIGHT, 5)
 
-        self.text_ctrl_capa = wx.TextCtrl(self.panel, style=wx.TE_READONLY)
+        self.text_ctrl_capa = wx.TextCtrl(self, style=wx.TE_READONLY)
         self.text_ctrl_capa.SetValue("0")
         capa_sizer.Add(self.text_ctrl_capa, 0, wx.ALL | wx.EXPAND, 5)
         self.main_sizer.Add(capa_sizer, 0, wx.ALL | wx.EXPAND, 5)
@@ -53,7 +52,9 @@ class MyFrame(wx.Frame):
         self.table_sizer = wx.BoxSizer(wx.VERTICAL)
         self.main_sizer.Add(self.table_sizer, 0, wx.ALL | wx.EXPAND, 5)
 
-        self.panel.SetSizer(self.main_sizer)
+        self.fill_grid(self.DEFAULT_EMPTY_TEAM_PATH)
+
+        self.SetSizer(self.main_sizer)
         self.Show()
 
     def load_file(self, event):
@@ -78,26 +79,36 @@ class MyFrame(wx.Frame):
 
             path_name = file_dialog.GetPath()
             self.text_ctrl_json.SetValue(path_name)
-            try:
-                self.grid = MyGrid(self.panel, MemberList.parse_file(path_name).__root__)
-            except IOError:
-                wx.LogError("Cannot open file '%s'." % path_name)
-
-            self.grid.Bind(EVT_MEMBER_UPDATED, self.on_update_table)
-
-            if self._team_table != None:
-                self.delete_all_children_from_sizer(self.table_sizer)
-
-            self._team_table = self.table_sizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
-            self.add_button_save()
-
-            self.main_sizer.Layout()
+            self.fill_grid(path_name)
 
             # Compute capacity
             self.text_ctrl_capa.SetValue(str(compute_capacity(MemberList.parse_file(path_name).__root__,
-                                                            int(self.text_ctrl_days.GetValue()))))
-            # Refresh ui
-            self.SetSizerAndFit(self.main_sizer)
+                                                              int(self.text_ctrl_days.GetValue()))))
+
+
+    def fill_grid(self, path_name: str):
+        """
+        Used to populate a Grid with a json file content and attach it to the main sizer.
+        :param path_name: path of the json file.
+        :return: nothing.
+        """
+        try:
+            self.grid = MyGrid(self, MemberList.parse_file(path_name).__root__)
+        except IOError:
+            wx.LogError("Cannot open file '%s'." % path_name)
+
+        self.grid.Bind(EVT_MEMBER_UPDATED, self.on_update_table)
+
+        if self._team_table != None:
+            self.delete_all_children_from_sizer(self.table_sizer)
+
+        self._team_table = self.table_sizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
+        self.add_button_save()
+
+        self.main_sizer.Layout()
+
+        # Refresh ui
+        self.SetSizerAndFit(self.main_sizer)
 
     def save_file(self, event):
         """
@@ -139,7 +150,7 @@ class MyFrame(wx.Frame):
         Method to append a save button to a the table sizer.
         :return: nothing.
         """
-        self.save_btn = wx.Button(self.panel, label='Save table to JSON file')
+        self.save_btn = wx.Button(self, label='Save table to JSON file')
         self.save_btn.Disable()
         self.save_btn.Bind(wx.EVT_BUTTON, self.save_file)
         self.table_sizer.Add(self.save_btn, 0, wx.LEFT, 5)
