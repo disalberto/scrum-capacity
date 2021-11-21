@@ -4,17 +4,17 @@ from enum import IntEnum
 
 class Member(BaseModel):
     name: str
-    daysOff: int
-    trainingDays: int
+    days_off: int
+    training_days: int
     activity: int
 
     def set_value(self, pos: int, value: str):
         if pos == int(Columns.NAME):
             self.name = value
         elif pos == int(Columns.DAYS_OFF):
-            self.daysOff = int(value)
+            self.days_off = int(value)
         elif pos == int(Columns.TRAINING_DAYS):
-            self.trainingDays = int(value)
+            self.training_days = int(value)
         elif pos == int(Columns.ACTIVITY):
             self.activity = int(value)
         else:

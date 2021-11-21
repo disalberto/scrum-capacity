@@ -1,56 +1,56 @@
 [
   {
     "name": "Alberto",
-    "daysOff": 0,
-    "trainingDays": 0,
+    "days_off": 0,
+    "training_days": 0,
     "activity":50
   },
   {
     "name": "Martino",
-    "daysOff": 1,
-    "trainingDays": 0,
+    "days_off": 1,
+    "training_days": 0,
     "activity":100
   },
   {
     "name": "Maurizio",
-    "daysOff": 2,
-    "trainingDays": 0,
+    "days_off": 2,
+    "training_days": 0,
     "activity":100
   },
   {
     "name": "Geremia",
-    "daysOff": 2,
-    "trainingDays": 0,
+    "days_off": 2,
+    "training_days": 0,
     "activity":100
   },
   {
     "name": "Davide",
-    "daysOff": 1,
-    "trainingDays": 0,
+    "days_off": 1,
+    "training_days": 0,
     "activity":0
   },
   {
     "name": "Generoso",
-    "daysOff": 4,
-    "trainingDays": 0,
+    "days_off": 4,
+    "training_days": 0,
     "activity":100
   },
   {
     "name": "Nassero",
-    "daysOff": 2,
-    "trainingDays": 0,
+    "days_off": 2,
+    "training_days": 0,
     "activity":75
   },
   {
     "name": "Nizaro",
-    "daysOff": 0,
-    "trainingDays": 0,
+    "days_off": 0,
+    "training_days": 0,
     "activity":50
   },
   {
     "name": "Adina",
-    "daysOff": 7,
-    "trainingDays": 0,
+    "days_off": 7,
+    "training_days": 0,
     "activity":50
   }
 ]

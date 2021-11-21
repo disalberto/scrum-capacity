@@ -10,7 +10,6 @@ class MyGrid(wx.grid.Grid):
 
     _list: MemberList = None
 
-
     def __init__(self, parent: wx.Panel, mList: MemberList):
 
         self._list = mList
@@ -26,10 +25,9 @@ class MyGrid(wx.grid.Grid):
 
         for member in mList:
             self.SetCellValue(self._list.index(member), int(Columns.NAME), member.name)
-            self.SetCellValue(self._list.index(member), int(Columns.DAYS_OFF), str(member.daysOff))
-            self.SetCellValue(self._list.index(member), int(Columns.TRAINING_DAYS), str(member.trainingDays))
+            self.SetCellValue(self._list.index(member), int(Columns.DAYS_OFF), str(member.days_off))
+            self.SetCellValue(self._list.index(member), int(Columns.TRAINING_DAYS), str(member.training_days))
             self.SetCellValue(self._list.index(member), int(Columns.ACTIVITY), str(member.activity))
-
 
     def update_member_list(self, event):
         row = event.GetRow()
@@ -49,8 +47,5 @@ class MyGrid(wx.grid.Grid):
         # Send event for updating the capacity
         wx.PostEvent(self, MemberUpdatedEvent())
 
-        #print("Updated List: " + str(self._list))
-
-
     def later(self):
-        msgbox = wx.MessageBox('Invalid Input!', 'Error', wx.OK | wx.ICON_HAND | wx.CENTRE)
+        msg_box = wx.MessageBox('Invalid Input!', 'Error', wx.OK | wx.ICON_HAND | wx.CENTRE)
