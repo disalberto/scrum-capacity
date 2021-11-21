@@ -9,6 +9,7 @@ class MyFrame(wx.Frame):
     DAFAULT_SPRINT_DAYS = "15"
 
     def __init__(self):
+        """ Initialize the main Frame with all the UI content. """
         super().__init__(parent=None, title='oRatio - The Capacity Calculator')
         self.SetSize(wx.Size(600, 500))
         self.panel = wx.Panel(self)
@@ -56,7 +57,15 @@ class MyFrame(wx.Frame):
         self.Show()
 
     def load_file(self, event):
-
+        """
+        Method that:
+            - opens a load file dialog if the corresponding button is pressed,
+            - sets the filepath in a dedicated text area,
+            - loads the file content in tabular form,
+            - triggers the capacity calculation with the original content.
+        :param event: the event of pressing the button: wx.EVT_BUTTON.
+        :return: nothing.
+        """
         if self._content_not_saved:
             if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
                              wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
@@ -91,6 +100,11 @@ class MyFrame(wx.Frame):
             self.SetSizerAndFit(self.main_sizer)
 
     def save_file(self, event):
+        """
+        Method used to save the current content of the table to a JSON file.
+        :param event: the event of pressing the button: wx.EVT_BUTTON.
+        :return: nothing.
+        """
         new_json = MemberList(__root__ = self.grid._list).json()
 
         with wx.FileDialog(self, "Save table to JSON file", wildcard="JSON files (*.json)|*.json",
@@ -111,10 +125,20 @@ class MyFrame(wx.Frame):
         self._content_not_saved = False
 
     def delete_all_children_from_sizer(self, sizer):
+        """
+        To delete all the children from a given sizer.
+        Used to avoid multiple table in the same sizer, if a file is loaded twice.
+        :param sizer: the input sizer to be cleaned.
+        :return: nothing.
+        """
         for child in sizer.GetChildren():
             child.GetWindow().Destroy()
 
     def add_button_save(self):
+        """
+        Method to append a save button to a the table sizer.
+        :return: nothing.
+        """
         self.save_btn = wx.Button(self.panel, label='Save table to JSON file')
         self.save_btn.Disable()
         self.save_btn.Bind(wx.EVT_BUTTON, self.save_file)
@@ -123,11 +147,24 @@ class MyFrame(wx.Frame):
 
     # Events Handling
     def on_update_table(self, event):
+        """
+        If the content of the dable is updated:
+            - recompute the capacity,
+            - enable the button save,
+            - set a boolean saying there is unsaved content.
+        :param event: the custom event: EVT_MEMBER_UPDATED.
+        :return: nothing.
+        """
         self.text_ctrl_capa.SetValue(str(compute_capacity(self.grid._list, int(self.text_ctrl_days.GetValue()))))
         self.save_btn.Enable()
         self._content_not_saved = True
 
     def on_update_days(self, event):
+        """
+        To recompute the capacity if the number of days in the selected sprint have changed.
+        :param event: an event of changing the text: wx.EVT_TEXT.
+        :return: nothing.
+        """
         self.text_ctrl_capa.SetValue(str(compute_capacity(self.grid._list, int(self.text_ctrl_days.GetValue()))))
 
 

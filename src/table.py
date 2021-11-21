@@ -7,11 +7,18 @@ from member import Member, MemberList, Columns
 from event import MemberUpdatedEvent, EVT_MEMBER_UPDATED
 
 class MyGrid(wx.grid.Grid):
-
+    """
+    Class of type Grid, used to materialize the content
+    of the JSON file (team members) in tabular form.
+    """
     _list: MemberList = None
 
     def __init__(self, parent: wx.Panel, mList: MemberList):
-
+        """
+        Init method to initialize a Grid with the content of a given MemberList
+        :param parent: the parent panel.
+        :param mList: the input list of team members.
+        """
         self._list = mList
         self.parentPanel = parent
 
@@ -30,6 +37,12 @@ class MyGrid(wx.grid.Grid):
             self.SetCellValue(self._list.index(member), int(Columns.ACTIVITY), str(member.activity))
 
     def update_member_list(self, event):
+        """
+        Method to update a given element of the list (row) with the modified content,
+        from the corresponding cell (col)
+        :param event: the event wx.grid.EVT_GRID_CELL_CHANGED.
+        :return: nothing.
+        """
         row = event.GetRow()
         col = event.GetCol()
 
@@ -48,4 +61,8 @@ class MyGrid(wx.grid.Grid):
         wx.PostEvent(self, MemberUpdatedEvent())
 
     def later(self):
+        """
+        To warn the user that an invalid content has been put in a given cell.
+        :return: nothing.
+        """
         msg_box = wx.MessageBox('Invalid Input!', 'Error', wx.OK | wx.ICON_HAND | wx.CENTRE)
