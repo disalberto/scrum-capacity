@@ -36,8 +36,17 @@ class MyFrame(wx.Frame):
 
         self.text_ctrl_days = wx.TextCtrl(self)
         self.text_ctrl_days.SetValue(self.DAFAULT_SPRINT_DAYS)
-        self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_days)
+        self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_days_or_sfactor)
         capa_sizer.Add(self.text_ctrl_days, 0, wx.ALL | wx.EXPAND, 5)
+
+        sfactor_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
+        sfactor_label.SetLabel("Scrum Factor in %:")
+        capa_sizer.Add(sfactor_label, 0, wx.ALL | wx.RIGHT, 5)
+
+        self.text_ctrl_sfactor = wx.TextCtrl(self)
+        self.text_ctrl_sfactor.SetValue("80")
+        self.text_ctrl_sfactor.Bind(wx.EVT_TEXT, self.on_update_days_or_sfactor)
+        capa_sizer.Add(self.text_ctrl_sfactor, 0, wx.ALL | wx.EXPAND, 5)
 
         capa_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
         capa_label.SetLabel("Capacity:")
@@ -83,7 +92,8 @@ class MyFrame(wx.Frame):
 
             # Compute capacity
             self.text_ctrl_capa.SetValue(str(compute_capacity(MemberList.parse_file(path_name).__root__,
-                                                              int(self.text_ctrl_days.GetValue()))))
+                                                              self._sanitize_int(self.text_ctrl_days.GetValue()),
+                                                              self._sanitize_int(self.text_ctrl_sfactor.GetValue()))))
 
 
     def fill_grid(self, path_name: str):
@@ -166,17 +176,24 @@ class MyFrame(wx.Frame):
         :param event: the custom event: EVT_MEMBER_UPDATED.
         :return: nothing.
         """
-        self.text_ctrl_capa.SetValue(str(compute_capacity(self.grid._list, int(self.text_ctrl_days.GetValue()))))
+        self.text_ctrl_capa.SetValue(str(compute_capacity(self.grid._list,
+                                                          self._sanitize_int(self.text_ctrl_days.GetValue()),
+                                                          self._sanitize_int(self.text_ctrl_sfactor.GetValue()))))
         self.save_btn.Enable()
         self._content_not_saved = True
 
-    def on_update_days(self, event):
+    def on_update_days_or_sfactor(self, event):
         """
         To recompute the capacity if the number of days in the selected sprint have changed.
         :param event: an event of changing the text: wx.EVT_TEXT.
         :return: nothing.
         """
-        self.text_ctrl_capa.SetValue(str(compute_capacity(self.grid._list, int(self.text_ctrl_days.GetValue()))))
+        self.text_ctrl_capa.SetValue(str(compute_capacity(self.grid._list,
+                                                          self._sanitize_int(self.text_ctrl_days.GetValue()),
+                                                          self._sanitize_int(self.text_ctrl_sfactor.GetValue()))))
+
+    def _sanitize_int(self, input: str):
+        return int(input) if input != '' else 0
 
 
 if __name__ == '__main__':
