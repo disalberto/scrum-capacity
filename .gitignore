@@ -133,3 +133,6 @@ dmypy.json
 
 # IntelliJ Idea
 .idea/
+
+# Output Folder
+out/

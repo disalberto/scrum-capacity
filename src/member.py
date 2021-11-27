@@ -1,6 +1,6 @@
 from typing import List
 from pydantic import BaseModel
-from enum import IntEnum
+from column import Columns
 
 class Member(BaseModel):
     """
@@ -37,12 +37,3 @@ class MemberList(BaseModel):
     Class representing a list of Member.
     """
     __root__: List[Member]
-
-class Columns(IntEnum):
-    """
-    To assiciate each member attribute with a table column.
-    """
-    NAME = 0
-    DAYS_OFF = 1
-    TRAINING_DAYS = 2
-    ACTIVITY = 3

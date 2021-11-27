@@ -2,7 +2,8 @@
 
 ***
 ***TODO***
-Default empty grid with columns and number of rows.
-Empty json (single member?) to be used to create and fill a new list if empty cells are modified.
+Capacity column in json and table
 
-Variable scrum factor (for IP iteration) and scrum days in JSON
+Solve the following and DRY     
+input = self.check_int(str(event.GetEventObject().GetValue()))
+RecursionError: maximum recursion depth exceeded while calling a Python object

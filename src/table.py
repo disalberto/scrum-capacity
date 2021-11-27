@@ -1,10 +1,11 @@
 import wx
 import wx.grid
 import csv
-
 from pydantic import BaseModel, ValidationError
-from member import Member, MemberList, Columns
+from column import Columns
+from member import Member, MemberList
 from event import MemberUpdatedEvent, EVT_MEMBER_UPDATED
+from common import Common
 
 class MyGrid(wx.grid.Grid):
     """
@@ -49,13 +50,13 @@ class MyGrid(wx.grid.Grid):
         if int(Columns.NAME) == col:
             cell_input = self.GetCellValue(row, col)
         else:
-            try:
-                cell_input = int(self.GetCellValue(row, col))
-            except:
-                self.SetCellValue(row, col, '')
-                wx.CallAfter(self.later)
+            cell_input = Common.check_int(self, self.GetCellValue(row, col))
+            #Update the cell in case of wrong input
+            self.SetCellValue(row, col, str(cell_input))
 
         self._list[row].set_value(col, cell_input)
+
+        print(str(self._list))
 
         # Send event for updating the capacity
         wx.PostEvent(self, MemberUpdatedEvent())
