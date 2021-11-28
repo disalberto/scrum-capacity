@@ -9,7 +9,8 @@ TEMPLATE="""
         "name": "Member {{ i }}",
         "days_off": 0,
         "training_days": 0,
-        "activity": 0
+        "activity": 0,
+        "capacity": 0
       }{{ "," if not loop.last else "" }}
     {% endfor %}
   ]

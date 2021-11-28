@@ -8,3 +8,4 @@ class Columns(IntEnum):
     DAYS_OFF = 1
     TRAINING_DAYS = 2
     ACTIVITY = 3
+    CAPACITY = 4

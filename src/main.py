@@ -6,13 +6,9 @@ from member import MemberList
 from event import EVT_MEMBER_UPDATED
 from estimation import Estimation
 from team_template import TEMPLATE
-from common import Common
+from common import *
 
 class MyFrame(wx.Frame):
-
-    DAFAULT_SPRINT_DAYS: int = 15
-    DEFAULT_CAPACITY: float = 0.0
-    DAFAULT_SCRUM_FACTOR: int = 80
 
     def __init__(self):
         """ Initialize the main Frame with all the UI content. """
@@ -44,7 +40,7 @@ class MyFrame(wx.Frame):
         capa_sizer.Add(days_label, 0, wx.ALL | wx.EXPAND, 5)
 
         self.text_ctrl_days = wx.TextCtrl(self)
-        self.text_ctrl_days.SetValue(str(self.DAFAULT_SPRINT_DAYS))
+        self.text_ctrl_days.SetValue(str(Common.DAFAULT_SPRINT_DAYS))
         self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
         self.text_ctrl_days.Disable()
         capa_sizer.Add(self.text_ctrl_days, 0, wx.ALL | wx.EXPAND, 5)
@@ -54,17 +50,17 @@ class MyFrame(wx.Frame):
         capa_sizer.Add(sfactor_label, 0, wx.ALL | wx.RIGHT, 5)
 
         self.text_ctrl_sfactor = wx.TextCtrl(self)
-        self.text_ctrl_sfactor.SetValue(str(self.DAFAULT_SCRUM_FACTOR))
+        self.text_ctrl_sfactor.SetValue(str(Common.DAFAULT_SCRUM_FACTOR))
         self.text_ctrl_sfactor.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
         self.text_ctrl_sfactor.Disable()
         capa_sizer.Add(self.text_ctrl_sfactor, 0, wx.ALL | wx.EXPAND, 5)
 
         capa_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
-        capa_label.SetLabel("Capacity:")
+        capa_label.SetLabel("Total Capacity:")
         capa_sizer.Add(capa_label, 0, wx.ALL | wx.RIGHT, 5)
 
         self.text_ctrl_capa = wx.TextCtrl(self, style=wx.TE_READONLY)
-        self.text_ctrl_capa.SetValue(str(self.DEFAULT_CAPACITY))
+        self.text_ctrl_capa.SetValue(str(Common.DEFAULT_CAPACITY))
         self.text_ctrl_capa.SetForegroundColour(wx.RED)
         capa_sizer.Add(self.text_ctrl_capa, 0, wx.ALL | wx.EXPAND, 5)
         self.main_sizer.Add(capa_sizer, 0, wx.ALL | wx.EXPAND, 5)
@@ -107,22 +103,23 @@ class MyFrame(wx.Frame):
 
         dialog = wx.TextEntryDialog(self, "Size of the team:", "", style=wx.OK|wx.CANCEL)
         if dialog.ShowModal() == wx.ID_OK:
-            try:
-                self.team_size = int(dialog.GetValue())
 
+            if not Common.is_number(dialog.GetValue()):
+                Common.pop_wrong_input_num(self)
+                return
+            else:
+                self.team_size = int(dialog.GetValue())
                 # Empty the filepath in case there was some content before restarting with a new estimation
                 self.text_ctrl_json.SetValue("")
 
                 template: str = TEMPLATE
                 resulting_json = Template(template).render(range=range(self.team_size),
-                                                           capacity = self.DEFAULT_CAPACITY,
-                                                           sprint_days = self.DAFAULT_SPRINT_DAYS,
-                                                           scrum_factor = self.DAFAULT_SCRUM_FACTOR)
+                                                           capacity = Common.DEFAULT_CAPACITY,
+                                                           sprint_days = Common.DAFAULT_SPRINT_DAYS,
+                                                           scrum_factor = Common.DAFAULT_SCRUM_FACTOR)
 
                 # Use the newly defined json to build the UI
                 self.fill_content(resulting_json, False)
-            except:
-                Common.pop_wrong_input_num(self)
 
         dialog.Destroy()
 
@@ -156,7 +153,7 @@ class MyFrame(wx.Frame):
         """
         try:
             estimation = Estimation.parse_file(object) if is_file else Estimation.parse_raw(object)
-            self.grid = MyGrid(self, estimation.member_list.__root__)
+            self.grid = MyGrid(self, estimation)
         except IOError:
             wx.LogError("Cannot open file '%s'." % path_name)
 
@@ -192,8 +189,8 @@ class MyFrame(wx.Frame):
         :return: nothing.
         """
 
-        estimation = Estimation(sprint_days = int(self.text_ctrl_days.GetValue()),
-                                scrum_factor = int(self.text_ctrl_sfactor.GetValue()),
+        estimation = Estimation(sprint_days = float(self.text_ctrl_days.GetValue()),
+                                scrum_factor = float(self.text_ctrl_sfactor.GetValue()),
                                 capacity = float(self.text_ctrl_capa.GetValue()),
                                 member_list = MemberList(__root__ = self.grid._list)).json()
 
@@ -235,14 +232,17 @@ class MyFrame(wx.Frame):
         self.table_sizer.Add(self.save_btn, 0, wx.LEFT, 5)
         self.SetSizerAndFit(self.main_sizer)
 
-    def update_capacity(self):
+    def update_capacity(self, sprint_days: str = None, scrum_factor: str = None):
         """
         Method to update the capacity text area and it's color.
         :return: nothing.
         """
-        capacity = compute_capacity(self.grid._list,
-                                    int(self.text_ctrl_days.GetValue()),
-                                    int(self.text_ctrl_sfactor.GetValue()))
+        capacity: float = 0.0
+        if sprint_days != None and scrum_factor != None:
+            capacity = compute_capacity(self.grid._list, sprint_days, scrum_factor)
+        else:
+            capacity = compute_capacity(self.grid._list)
+
         self.text_ctrl_capa.SetValue(str(capacity))
 
         self.update_capacity_color(capacity)
@@ -276,13 +276,14 @@ class MyFrame(wx.Frame):
         """
         raw_value = event.GetEventObject().GetValue()
 
-        if(raw_value.isnumeric()):
+        if (Common.is_number(raw_value)):
             event.Skip()
         else:
             Common.pop_wrong_input_num(self)
             event.GetEventObject().SetValue("0")
 
-        self.update_capacity()
+        self.update_capacity(sprint_days = self.text_ctrl_days.GetValue(),
+                             scrum_factor = self.text_ctrl_sfactor.GetValue())
 
     def on_update_grid(self, event):
         """

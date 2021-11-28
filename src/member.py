@@ -8,9 +8,10 @@ class Member(BaseModel):
     He/she has a name, a number of days off, a number of training days and an activity % (0-100)
     """
     name: str
-    days_off: int
-    training_days: int
-    activity: int
+    days_off: float
+    training_days: float
+    activity: float
+    capacity: float
 
     def set_value(self, pos: int, value: str):
         """
@@ -24,11 +25,13 @@ class Member(BaseModel):
         if pos == int(Columns.NAME):
             self.name = value
         elif pos == int(Columns.DAYS_OFF):
-            self.days_off = int(value)
+            self.days_off = float(value)
         elif pos == int(Columns.TRAINING_DAYS):
-            self.training_days = int(value)
+            self.training_days = float(value)
         elif pos == int(Columns.ACTIVITY):
-            self.activity = int(value)
+            self.activity = float(value)
+        elif pos == int(Columns.CAPACITY):
+            self.capacity = float(value)
         else:
             raise Exception('Unhandled column')
 

@@ -2,8 +2,5 @@
 
 ***
 ***TODO***
-Capacity column in json and table
-
-Solve the following and DRY     
-input = self.check_int(str(event.GetEventObject().GetValue()))
-RecursionError: maximum recursion depth exceeded while calling a Python object
+Check inserted days off <= sprint days
+Default scrum factor and sprint days if wrong input

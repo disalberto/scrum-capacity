@@ -4,8 +4,10 @@ import csv
 from pydantic import BaseModel, ValidationError
 from column import Columns
 from member import Member, MemberList
+from estimation import Estimation
 from event import MemberUpdatedEvent, EVT_MEMBER_UPDATED
-from common import Common
+from common import *
+from capacity import member_capacity
 
 class MyGrid(wx.grid.Grid):
     """
@@ -13,29 +15,40 @@ class MyGrid(wx.grid.Grid):
     of the JSON file (team members) in tabular form.
     """
     _list: MemberList = None
+    _sprint_days: float = Common.DAFAULT_SPRINT_DAYS
+    _scrum_factor: float = Common.DAFAULT_SCRUM_FACTOR
 
-    def __init__(self, parent: wx.Panel, mList: MemberList):
+    def __init__(self, parent: wx.Panel, estimation: Estimation):
         """
         Init method to initialize a Grid with the content of a given MemberList
         :param parent: the parent panel.
         :param mList: the input list of team members.
         """
-        self._list = mList
+        self._list = estimation.member_list.__root__
+        self._sprint_days = estimation.sprint_days
+        self._scrum_factor = estimation.scrum_factor
+
         self.parentPanel = parent
 
         wx.grid.Grid.__init__(self, self.parentPanel)
         self.SetDefaultColSize (130)
-        self.CreateGrid(len(mList), len(Columns))
+        self.CreateGrid(len(self._list), len(Columns))
         self.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.update_member_list)
 
         for col in Columns:
             self.SetColLabelValue(int(col), col.name)
 
-        for member in mList:
+        for member in self._list:
             self.SetCellValue(self._list.index(member), int(Columns.NAME), member.name)
             self.SetCellValue(self._list.index(member), int(Columns.DAYS_OFF), str(member.days_off))
             self.SetCellValue(self._list.index(member), int(Columns.TRAINING_DAYS), str(member.training_days))
             self.SetCellValue(self._list.index(member), int(Columns.ACTIVITY), str(member.activity))
+
+            # Initial capacity computation
+            capacity = member_capacity(member, self._sprint_days, self._scrum_factor)
+            member.capacity = capacity
+            self.SetCellValue(self._list.index(member), int(Columns.CAPACITY), str(capacity))
+            self.SetReadOnly(self._list.index(member), int(Columns.CAPACITY), True)
 
     def update_member_list(self, event):
         """
@@ -54,7 +67,7 @@ class MyGrid(wx.grid.Grid):
         else:
             # Not column Name
             cell_input = self.GetCellValue(row, col)
-            if not cell_input.isnumeric():
+            if not Common.is_number(cell_input):
                 Common.pop_wrong_input_num(self.GetParent())
                 # Back to the original value
                 cell_input = str(self._list[row].get_value(col))
@@ -65,7 +78,12 @@ class MyGrid(wx.grid.Grid):
         if updated:
             self._list[row].set_value(col, cell_input)
 
-        #print(str(self._list))
+            # Update LOCAL capacity
+            new_capacity = member_capacity(self._list[row], self._sprint_days, self._scrum_factor)
+            self._list[row].set_value(int(Columns.CAPACITY), new_capacity)
+            self.SetCellValue(row, int(Columns.CAPACITY), str(new_capacity))
 
-        # Send event for updating the capacity
+        print(str(self._list))
+
+        # Send event for updating the TOTAL capacity and the related text box
         wx.PostEvent(self, MemberUpdatedEvent())
