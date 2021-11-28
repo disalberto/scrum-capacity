@@ -50,9 +50,12 @@ class MyGrid(wx.grid.Grid):
         if int(Columns.NAME) == col:
             cell_input = self.GetCellValue(row, col)
         else:
-            cell_input = Common.check_int(self, self.GetCellValue(row, col))
-            #Update the cell in case of wrong input
-            self.SetCellValue(row, col, str(cell_input))
+            # Not column Name
+            cell_input = self.GetCellValue(row, col)
+            if not cell_input.isnumeric():
+                Common.pop_wrong_input_num(self.GetParent())
+                cell_input = "0"
+                self.SetCellValue(row, col, cell_input)
 
         self._list[row].set_value(col, cell_input)
 

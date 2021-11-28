@@ -45,7 +45,8 @@ class MyFrame(wx.Frame):
 
         self.text_ctrl_days = wx.TextCtrl(self)
         self.text_ctrl_days.SetValue(str(self.DAFAULT_SPRINT_DAYS))
-        self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_check_int)
+        self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
+        self.text_ctrl_days.Disable()
         capa_sizer.Add(self.text_ctrl_days, 0, wx.ALL | wx.EXPAND, 5)
 
         sfactor_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
@@ -54,7 +55,8 @@ class MyFrame(wx.Frame):
 
         self.text_ctrl_sfactor = wx.TextCtrl(self)
         self.text_ctrl_sfactor.SetValue(str(self.DAFAULT_SCRUM_FACTOR))
-        self.text_ctrl_sfactor.Bind(wx.EVT_TEXT, self.on_check_int)
+        self.text_ctrl_sfactor.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
+        self.text_ctrl_sfactor.Disable()
         capa_sizer.Add(self.text_ctrl_sfactor, 0, wx.ALL | wx.EXPAND, 5)
 
         capa_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
@@ -80,12 +82,29 @@ class MyFrame(wx.Frame):
 
         self.Show()
 
+    def check_not_saved(self):
+        """
+        Check if the current content is not saved before allowing its replacement.
+        :arg popup window is shown to ask the user's confirmatoin.
+        :return -1 if the content is not saved and the user chose to undo,
+                0 if either the content is updated or the user confirmed the action.
+        """
+        ret: int = 0
+        if self._content_not_saved:
+            if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
+                             wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                ret = -1
+        return ret
+
     def new_est(self, event):
         """
         Method to initialize a new estimation with a given number of people in the team (rows).
         :param event: the event of pressing the dedicated button.
         :return: nothing.
         """
+        if self.check_not_saved() < 0:
+            return
+
         dialog = wx.TextEntryDialog(self, "Size of the team:", "", style=wx.OK|wx.CANCEL)
         if dialog.ShowModal() == wx.ID_OK:
             try:
@@ -118,10 +137,8 @@ class MyFrame(wx.Frame):
         :param event: the event of pressing the button: wx.EVT_BUTTON.
         :return: nothing.
         """
-        if self._content_not_saved:
-            if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
-                             wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-                return
+        if self.check_not_saved() < 0:
+            return
 
         with wx.FileDialog(self, "Open", "", "", "JSON files (*.json)|*.json",
                                        wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as file_dialog:
@@ -144,29 +161,29 @@ class MyFrame(wx.Frame):
         except IOError:
             wx.LogError("Cannot open file '%s'." % path_name)
 
-        # Set capacity
-        capacity: float = estimation.capacity
-        self.text_ctrl_capa.SetValue(str(capacity))
-        self.update_capacity_color(capacity)
-        # Set scrum factor
-        self.text_ctrl_sfactor.SetValue(str(estimation.scrum_factor))
-        # Set sprint days
-        self.text_ctrl_days.SetValue(str(estimation.sprint_days))
-
-        # Event binding
-        self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update)
-        self.text_ctrl_sfactor.Bind(wx.EVT_TEXT, self.on_update)
-        self.grid.Bind(EVT_MEMBER_UPDATED, self.on_update)
-
+        # Init Grid and Save button
         if self._team_table != None:
             self.delete_all_children_from_sizer(self.table_sizer)
 
         self._team_table = self.table_sizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
         self.add_button_save()
 
-        self.main_sizer.Layout()
+        # Set capacity
+        capacity: float = estimation.capacity
+        self.text_ctrl_capa.SetValue(str(capacity))
+        self.update_capacity_color(capacity)
+        # Set scrum factor
+        self.text_ctrl_sfactor.SetValue(str(estimation.scrum_factor))
+        self.text_ctrl_sfactor.Enable()
+        # Set sprint days
+        self.text_ctrl_days.SetValue(str(estimation.sprint_days))
+        self.text_ctrl_days.Enable()
+
+        # Event binding
+        self.grid.Bind(EVT_MEMBER_UPDATED, self.on_update_grid)
 
         # Refresh ui
+        self.main_sizer.Layout()
         self.SetSizerAndFit(self.main_sizer)
 
     def save_file(self, event):
@@ -219,14 +236,9 @@ class MyFrame(wx.Frame):
         self.table_sizer.Add(self.save_btn, 0, wx.LEFT, 5)
         self.SetSizerAndFit(self.main_sizer)
 
-    # Events Handling
-    def on_update(self, event):
+    def update_capacity(self):
         """
-        If the content of the dable is updated:
-            - recompute the capacity,
-            - enable the button save,
-            - set a boolean saying there is unsaved content.
-        :param event: the custom event: EVT_MEMBER_UPDATED.
+        Method to update the capacity text area and it's color.
         :return: nothing.
         """
         capacity = compute_capacity(self.grid._list,
@@ -238,25 +250,6 @@ class MyFrame(wx.Frame):
 
         self.save_btn.Enable()
         self._content_not_saved = True
-
-    def on_check_int(self, event):
-        """
-        On text change, verify the input value is of type int.
-        If not, an exception popup is shown.
-        :param event: EVT_TXT event
-        :return: nothing.
-        """
-        try:
-            int(event.GetEventObject().GetValue())
-        except:
-            message = wx.MessageDialog(self, "An integer is required!", "ERROR", style=wx.OK|wx.ICON_ERROR)
-            message.ShowModal()
-            message.Destroy()
-            event.GetEventObject().SetValue("0")
-        # ev = event.GetEventObject().GetValue()
-        # input = Common.check_int(self, ev)
-        # #Update the cell in case of wrong input
-        # event.GetEventObject().SetValue(str(input))
 
     def update_capacity_color(self, capacity: float):
         """
@@ -270,6 +263,39 @@ class MyFrame(wx.Frame):
             self.text_ctrl_capa.SetForegroundColour(wx.YELLOW)
         else:
             self.text_ctrl_capa.SetForegroundColour(wx.RED)
+
+    ################################################# Events Handling ##################################################
+
+    def on_update_text_ctrl(self, event):
+        """
+        If the content of the text boxes is updated:
+            - recompute the capacity,
+            - enable the button save,
+            - set a boolean saying there is unsaved content.
+        :param event: the custom event: EVT_MEMBER_UPDATED.
+        :return: nothing.
+        """
+        raw_value = event.GetEventObject().GetValue()
+
+        if(raw_value.isnumeric()):
+            event.Skip()
+        else:
+            Common.pop_wrong_input_num(self)
+            event.GetEventObject().SetValue("0")
+
+        self.update_capacity()
+
+    def on_update_grid(self, event):
+        """
+        If the content of the grid is updated:
+            - recompute the capacity,
+            - enable the button save,
+            - set a boolean saying there is unsaved content.
+        :param event: the custom event: EVT_MEMBER_UPDATED.
+        :return: nothing.
+        """
+        self.update_capacity()
+
 
 
 if __name__ == '__main__':
