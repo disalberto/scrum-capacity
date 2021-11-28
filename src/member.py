@@ -32,6 +32,26 @@ class Member(BaseModel):
         else:
             raise Exception('Unhandled column')
 
+    def get_value(self, pos: int):
+        """
+        Method to get the value of the attribute of the corresponding column.
+        :param pos: position in the table (column).
+        :return: the attribute's value.
+        """
+        ret: str = ""
+        if pos == int(Columns.NAME):
+            ret = self.name
+        elif pos == int(Columns.DAYS_OFF):
+            ret = self.days_off
+        elif pos == int(Columns.TRAINING_DAYS):
+            ret = self.training_days
+        elif pos == int(Columns.ACTIVITY):
+            ret = self.activity
+        else:
+            raise Exception('Unhandled column')
+
+        return ret
+
 class MemberList(BaseModel):
     """
     Class representing a list of Member.

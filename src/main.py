@@ -122,9 +122,8 @@ class MyFrame(wx.Frame):
                 # Use the newly defined json to build the UI
                 self.fill_content(resulting_json, False)
             except:
-                message = wx.MessageDialog(self, "An integer is required!", "ERROR", style=wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
+                Common.pop_wrong_input_num(self)
+
         dialog.Destroy()
 
     def load_file(self, event):

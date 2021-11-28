@@ -46,27 +46,26 @@ class MyGrid(wx.grid.Grid):
         """
         row = event.GetRow()
         col = event.GetCol()
+        updated: bool = False
 
         if int(Columns.NAME) == col:
             cell_input = self.GetCellValue(row, col)
+            updated = True
         else:
             # Not column Name
             cell_input = self.GetCellValue(row, col)
             if not cell_input.isnumeric():
                 Common.pop_wrong_input_num(self.GetParent())
-                cell_input = "0"
+                # Back to the original value
+                cell_input = str(self._list[row].get_value(col))
                 self.SetCellValue(row, col, cell_input)
+            else:
+                updated = True
 
-        self._list[row].set_value(col, cell_input)
+        if updated:
+            self._list[row].set_value(col, cell_input)
 
-        print(str(self._list))
+        #print(str(self._list))
 
         # Send event for updating the capacity
         wx.PostEvent(self, MemberUpdatedEvent())
-
-    def later(self):
-        """
-        To warn the user that an invalid content has been put in a given cell.
-        :return: nothing.
-        """
-        msg_box = wx.MessageBox('Invalid Input!', 'Error', wx.OK | wx.ICON_HAND | wx.CENTRE)
