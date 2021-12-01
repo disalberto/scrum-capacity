@@ -45,6 +45,7 @@ def member_capacity(member: Member, sprint_days: str, scrum_factor: str):
     :param scrum_factor: the % of time spent in SCRUM activities
     :return: his/her capacity
     """
+    effectiveness: float = 100.0 - float(scrum_factor)
     capa=round(max(0, float(sprint_days) - member.days_off - member.training_days)
-               * member.activity * float(scrum_factor) / 10000, ROUND_PRECISION)
+               * member.activity * effectiveness / 10000, ROUND_PRECISION)
     return capa
