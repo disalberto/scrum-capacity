@@ -1,4 +1,4 @@
-TEMPLATE="""
+TEMPLATE: str = """
 {
   "sprint_days": {{ sprint_days }},
   "scrum_factor": {{ scrum_factor }},

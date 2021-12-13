@@ -1,28 +1,26 @@
-import wx
 import wx.grid
-import csv
-from pydantic import BaseModel, ValidationError
 from column import Columns
-from member import Member, MemberList
+from member import Member
 from estimation import Estimation
-from event import MemberUpdatedEvent, EVT_MEMBER_UPDATED
+from event import MemberUpdatedEvent
 from common import *
 from capacity import member_capacity
+
 
 class MyGrid(wx.grid.Grid):
     """
     Class of type Grid, used to materialize the content
     of the JSON file (team members) in tabular form.
     """
-    _list: MemberList = None
-    _sprint_days: float = Common.DAFAULT_SPRINT_DAYS
-    _scrum_factor: float = Common.DAFAULT_SCRUM_FACTOR
+    _list: list[Member] = None
+    _sprint_days: float = Common.DEFAULT_SPRINT_DAYS
+    _scrum_factor: float = Common.DEFAULT_SCRUM_FACTOR
 
-    def __init__(self, parent: wx.Panel, estimation: Estimation):
+    def __init__(self, parent: wx.Frame, estimation: Estimation):
         """
         Init method to initialize a Grid with the content of a given MemberList
         :param parent: the parent panel.
-        :param mList: the input list of team members.
+        :param estimation: the Estimation (list and other info)
         """
         self._list = estimation.member_list.__root__
         self._sprint_days = estimation.sprint_days
@@ -31,7 +29,7 @@ class MyGrid(wx.grid.Grid):
         self.parentPanel = parent
 
         wx.grid.Grid.__init__(self, self.parentPanel)
-        self.SetDefaultColSize (130)
+        self.SetDefaultColSize(130)
         self.CreateGrid(len(self._list), len(Columns))
         self.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.update_member_list)
 

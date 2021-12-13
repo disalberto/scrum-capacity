@@ -2,6 +2,7 @@ from typing import List
 from pydantic import BaseModel
 from column import Columns
 
+
 class Member(BaseModel):
     """
     Class Member representing team member.
@@ -41,19 +42,19 @@ class Member(BaseModel):
         :param pos: position in the table (column).
         :return: the attribute's value.
         """
-        ret: str = ""
         if pos == int(Columns.NAME):
             ret = self.name
         elif pos == int(Columns.DAYS_OFF):
-            ret = self.days_off
+            ret = str(self.days_off)
         elif pos == int(Columns.TRAINING_DAYS):
-            ret = self.training_days
+            ret = str(self.training_days)
         elif pos == int(Columns.ACTIVITY):
-            ret = self.activity
+            ret = str(self.activity)
         else:
             raise Exception('Unhandled column')
 
         return ret
+
 
 class MemberList(BaseModel):
     """

@@ -1,4 +1,3 @@
-import wx
 from jinja2 import Template
 from capacity import compute_capacity
 from table import MyGrid
@@ -8,13 +7,18 @@ from estimation import Estimation
 from team_template import TEMPLATE
 from common import *
 
+
 class MyFrame(wx.Frame):
 
     def __init__(self):
         """ Initialize the main Frame with all the UI content. """
         super().__init__(parent=None, title='oRatio - The Capacity Calculator')
+        self.save_btn = None
+        self.team_size = None
+        self.grid = None
+        self._team_table = None
+
         self.main_sizer = wx.BoxSizer(wx.VERTICAL)
-        self._team_table: wx.SizerItem = None
         self._content_not_saved: bool = False
 
         # JSON part
@@ -28,34 +32,34 @@ class MyFrame(wx.Frame):
         load_btn.Bind(wx.EVT_BUTTON, self.load_file)
         json_sizer.Add(load_btn, 0, wx.ALL | wx.RIGHT, 5)
 
-        self.text_ctrl_json = wx.TextCtrl(self, style=wx.TE_READONLY|wx.TE_RIGHT, size=(500, -1))
+        self.text_ctrl_json = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_RIGHT, size=(500, -1))
         json_sizer.Add(self.text_ctrl_json, 0, wx.ALL | wx.EXPAND, 5)
         self.main_sizer.Add(json_sizer, 0, wx.ALL | wx.EXPAND, 5)
 
         # Capacity part
         capa_sizer = sz = wx.StaticBoxSizer(wx.HORIZONTAL, self, "")
 
-        days_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
+        days_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
         days_label.SetLabel("Sprint Days:")
         capa_sizer.Add(days_label, 0, wx.ALL | wx.EXPAND, 5)
 
         self.text_ctrl_days = wx.TextCtrl(self)
-        self.text_ctrl_days.SetValue(str(Common.DAFAULT_SPRINT_DAYS))
+        self.text_ctrl_days.SetValue(str(Common.DEFAULT_SPRINT_DAYS))
         self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
         self.text_ctrl_days.Disable()
         capa_sizer.Add(self.text_ctrl_days, 0, wx.ALL | wx.EXPAND, 5)
 
-        sfactor_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
+        sfactor_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
         sfactor_label.SetLabel("Scrum Factor in %:")
         capa_sizer.Add(sfactor_label, 0, wx.ALL | wx.RIGHT, 5)
 
         self.text_ctrl_sfactor = wx.TextCtrl(self)
-        self.text_ctrl_sfactor.SetValue(str(Common.DAFAULT_SCRUM_FACTOR))
+        self.text_ctrl_sfactor.SetValue(str(Common.DEFAULT_SCRUM_FACTOR))
         self.text_ctrl_sfactor.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
         self.text_ctrl_sfactor.Disable()
         capa_sizer.Add(self.text_ctrl_sfactor, 0, wx.ALL | wx.EXPAND, 5)
 
-        capa_label = wx.StaticText(self, -1, style = wx.ALIGN_RIGHT)
+        capa_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
         capa_label.SetLabel("Total Capacity:")
         capa_sizer.Add(capa_label, 0, wx.ALL | wx.RIGHT, 5)
 
@@ -81,16 +85,12 @@ class MyFrame(wx.Frame):
     def check_not_saved(self):
         """
         Check if the current content is not saved before allowing its replacement.
-        :arg popup window is shown to ask the user's confirmatoin.
-        :return -1 if the content is not saved and the user chose to undo,
-                0 if either the content is updated or the user confirmed the action.
+        :return False-1 if the content is not saved and the user chose to undo,
+                True if either the content is updated or the user confirmed the action.
         """
-        ret: int = 0
-        if self._content_not_saved:
-            if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
-                             wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-                ret = -1
-        return ret
+        return self._content_not_saved and \
+               wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
+                             wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO
 
     def new_est(self, event):
         """
@@ -98,10 +98,10 @@ class MyFrame(wx.Frame):
         :param event: the event of pressing the dedicated button.
         :return: nothing.
         """
-        if self.check_not_saved() < 0:
+        if self.check_not_saved():
             return
 
-        dialog = wx.TextEntryDialog(self, "Size of the team:", "", style=wx.OK|wx.CANCEL)
+        dialog = wx.TextEntryDialog(self, "Size of the team:", "", style=wx.OK | wx.CANCEL)
         if dialog.ShowModal() == wx.ID_OK:
 
             if not Common.is_number(dialog.GetValue()):
@@ -114,9 +114,9 @@ class MyFrame(wx.Frame):
 
                 template: str = TEMPLATE
                 resulting_json = Template(template).render(range=range(self.team_size),
-                                                           capacity = Common.DEFAULT_CAPACITY,
-                                                           sprint_days = Common.DAFAULT_SPRINT_DAYS,
-                                                           scrum_factor = Common.DAFAULT_SCRUM_FACTOR)
+                                                           capacity=Common.DEFAULT_CAPACITY,
+                                                           sprint_days=Common.DEFAULT_SPRINT_DAYS,
+                                                           scrum_factor=Common.DEFAULT_SCRUM_FACTOR)
 
                 # Use the newly defined json to build the UI
                 self.fill_content(resulting_json, False)
@@ -133,11 +133,11 @@ class MyFrame(wx.Frame):
         :param event: the event of pressing the button: wx.EVT_BUTTON.
         :return: nothing.
         """
-        if self.check_not_saved() < 0:
+        if self.check_not_saved():
             return
 
         with wx.FileDialog(self, "Open", "", "", "JSON files (*.json)|*.json",
-                                       wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as file_dialog:
+                           wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as file_dialog:
             if file_dialog.ShowModal() == wx.ID_CANCEL:
                 return
 
@@ -145,24 +145,31 @@ class MyFrame(wx.Frame):
             self.text_ctrl_json.SetValue(path_name)
             self.fill_content(path_name, True)
 
-    def fill_content(self, object: str, is_file: bool):
+        self._content_not_saved = False
+
+    def fill_content(self, obj: str, is_file: bool):
         """
         Used to populate a Grid with a json file content and attach it to the main sizer.
-        :param path_name: path of the json file.
+        :param obj: path of the json file.
+        :param is_file: true if the input is a filepath, false if json
         :return: nothing.
         """
         try:
-            estimation = Estimation.parse_file(object) if is_file else Estimation.parse_raw(object)
+            estimation = Estimation.parse_file(obj) if is_file else Estimation.parse_raw(obj)
             self.grid = MyGrid(self, estimation)
         except IOError:
-            wx.LogError("Cannot open file '%s'." % path_name)
+            wx.LogError("Error parsing or opening '%s'." % obj)
+            return
 
         # Init Grid and Save button
-        if self._team_table != None:
+        if self._team_table is not None:
             self.delete_all_children_from_sizer(self.table_sizer)
 
         self._team_table = self.table_sizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
-        self.add_button_save()
+        self.save_btn = wx.Button(self, label='Save table to JSON file')
+        self.save_btn.Bind(wx.EVT_BUTTON, self.save_file)
+        self.table_sizer.Add(self.save_btn, 0, wx.LEFT, 5)
+        self.SetSizerAndFit(self.main_sizer)
 
         # Set capacity
         capacity: float = estimation.capacity
@@ -179,6 +186,7 @@ class MyFrame(wx.Frame):
         self.grid.Bind(EVT_MEMBER_UPDATED, self.on_update_grid)
 
         # Refresh ui
+        self.save_btn.Disable()
         self.main_sizer.Layout()
         self.SetSizerAndFit(self.main_sizer)
 
@@ -189,10 +197,10 @@ class MyFrame(wx.Frame):
         :return: nothing.
         """
 
-        estimation = Estimation(sprint_days = float(self.text_ctrl_days.GetValue()),
-                                scrum_factor = float(self.text_ctrl_sfactor.GetValue()),
-                                capacity = float(self.text_ctrl_capa.GetValue()),
-                                member_list = MemberList(__root__ = self.grid._list)).json()
+        estimation = Estimation(sprint_days=float(self.text_ctrl_days.GetValue()),
+                                scrum_factor=float(self.text_ctrl_sfactor.GetValue()),
+                                capacity=float(self.text_ctrl_capa.GetValue()),
+                                member_list=MemberList(__root__=self.grid._list)).json()
 
         with wx.FileDialog(self, "Save data to JSON file", wildcard="JSON files (*.json)|*.json",
                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as file_dialog:
@@ -221,25 +229,13 @@ class MyFrame(wx.Frame):
         for child in sizer.GetChildren():
             child.GetWindow().Destroy()
 
-    def add_button_save(self):
-        """
-        Method to append a save button to a the table sizer.
-        :return: nothing.
-        """
-        self.save_btn = wx.Button(self, label='Save table to JSON file')
-        self.save_btn.Disable()
-        self.save_btn.Bind(wx.EVT_BUTTON, self.save_file)
-        self.table_sizer.Add(self.save_btn, 0, wx.LEFT, 5)
-        self.SetSizerAndFit(self.main_sizer)
-
     def update_capacity(self, sprint_days: str = None, scrum_factor: str = None):
         """
         Method to update the capacity text area and it's color.
         :return: nothing.
         """
-        capacity: float = 0.0
-        if sprint_days != None and scrum_factor != None:
-            capacity = compute_capacity(self.grid._list, sprint_days, scrum_factor)
+        if sprint_days is not None and scrum_factor is not None:
+            capacity = compute_capacity(self.grid._list, float(sprint_days), float(scrum_factor))
         else:
             capacity = compute_capacity(self.grid._list)
 
@@ -256,9 +252,9 @@ class MyFrame(wx.Frame):
         :param capacity: the computed or retrieved capacity.
         :return: nothing.
         """
-        if (capacity > 40):
+        if capacity > 40:
             self.text_ctrl_capa.SetForegroundColour(wx.GREEN)
-        elif (capacity > 20):
+        elif capacity > 20:
             self.text_ctrl_capa.SetForegroundColour(wx.YELLOW)
         else:
             self.text_ctrl_capa.SetForegroundColour(wx.RED)
@@ -276,14 +272,14 @@ class MyFrame(wx.Frame):
         """
         raw_value = event.GetEventObject().GetValue()
 
-        if (Common.is_number(raw_value)):
+        if Common.is_number(raw_value):
             event.Skip()
         else:
             Common.pop_wrong_input_num(self)
             event.GetEventObject().SetValue("0")
 
-        self.update_capacity(sprint_days = self.text_ctrl_days.GetValue(),
-                             scrum_factor = self.text_ctrl_sfactor.GetValue())
+        self.update_capacity(sprint_days=self.text_ctrl_days.GetValue(),
+                             scrum_factor=self.text_ctrl_sfactor.GetValue())
 
     def on_update_grid(self, event):
         """
@@ -295,7 +291,6 @@ class MyFrame(wx.Frame):
         :return: nothing.
         """
         self.update_capacity()
-
 
 
 if __name__ == '__main__':

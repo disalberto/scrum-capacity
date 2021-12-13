@@ -2,7 +2,8 @@ from csv import DictReader
 from multipledispatch import dispatch
 from member import Member, MemberList
 
-ROUND_PRECISION=2
+ROUND_PRECISION = 2
+
 
 @dispatch(list)
 def compute_capacity(mList: MemberList):
@@ -18,8 +19,9 @@ def compute_capacity(mList: MemberList):
 
     return round(capacity, ROUND_PRECISION)
 
-@dispatch(list, str, str)
-def compute_capacity(mList: MemberList, sprint_days: str, scrum_factor: str):
+
+@dispatch(list, float, float)
+def compute_capacity(mList: MemberList, sprint_days: float, scrum_factor: float):
     """
     For each member of the list and given a certain amount of days in the sprint,
     It returns the total capacity of the team, with a given round precision
@@ -28,7 +30,7 @@ def compute_capacity(mList: MemberList, sprint_days: str, scrum_factor: str):
     :param scrum_factor: the % of time spent in SCRUM activities
     :return: the total capacity
     """
-    capacity=0
+    capacity = 0
 
     for member in mList:
         m_capa = member_capacity(member, sprint_days, scrum_factor)
@@ -37,7 +39,7 @@ def compute_capacity(mList: MemberList, sprint_days: str, scrum_factor: str):
     return round(capacity, ROUND_PRECISION)
 
 
-def member_capacity(member: Member, sprint_days: str, scrum_factor: str):
+def member_capacity(member: Member, sprint_days: float, scrum_factor: float):
     """
     Method to compute the capacity of a person for a given sprint
     :param member: a given team member
@@ -46,6 +48,6 @@ def member_capacity(member: Member, sprint_days: str, scrum_factor: str):
     :return: his/her capacity
     """
     effectiveness: float = 100.0 - float(scrum_factor)
-    capa=round(max(0, float(sprint_days) - member.days_off - member.training_days)
-               * member.activity * effectiveness / 10000, ROUND_PRECISION)
+    capa = round(max(0.0, sprint_days - member.days_off - member.training_days)
+                 * member.activity * effectiveness / 10000, ROUND_PRECISION)
     return capa
