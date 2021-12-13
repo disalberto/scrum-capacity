@@ -3,7 +3,7 @@ import wx
 
 class Common():
     DEFAULT_SPRINT_DAYS: float = 15
-    DEFAULT_CAPACITY: float = 0.0
+    DEFAULT_CAPACITY: float = 100.0
     DEFAULT_SCRUM_FACTOR: float = 80.0
 
     def pop_wrong_input_num(self: wx.Window):

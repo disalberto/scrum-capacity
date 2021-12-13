@@ -231,13 +231,15 @@ class MyFrame(wx.Frame):
 
     def update_capacity(self, sprint_days: str = None, scrum_factor: str = None):
         """
-        Method to update the capacity text area and it's color.
+        Method to update the capacity text area and it's color and also the grid's local values.
         :return: nothing.
         """
         if sprint_days is not None and scrum_factor is not None:
             capacity = compute_capacity(self.grid._list, float(sprint_days), float(scrum_factor))
         else:
             capacity = compute_capacity(self.grid._list)
+
+        self.grid.update_local_capacity(float(sprint_days), float(scrum_factor))
 
         self.text_ctrl_capa.SetValue(str(capacity))
 

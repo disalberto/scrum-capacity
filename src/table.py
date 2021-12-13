@@ -85,3 +85,19 @@ class MyGrid(wx.grid.Grid):
 
         # Send event for updating the TOTAL capacity and the related text box
         wx.PostEvent(self, MemberUpdatedEvent())
+
+    def update_local_capacity(self, sprint_days: float, scrum_factor: float):
+        """
+        Update the capacity of each member in the GRID
+        :param sprint_days: the number of days in the current interation
+        :param scrum_factor: the % of time spent in Scrum activities
+        :return: nothing
+        """
+        self._sprint_days = sprint_days
+        self._scrum_factor = scrum_factor
+
+        for member in self._list:
+            capacity = member_capacity(member, sprint_days, scrum_factor)
+            member.capacity = capacity
+            # self._list[self._list.index(member)].set_value(int(Columns.CAPACITY), capacity)
+            self.SetCellValue(self._list.index(member), int(Columns.CAPACITY), str(capacity))
