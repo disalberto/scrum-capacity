@@ -292,7 +292,8 @@ class MyFrame(wx.Frame):
         :param event: the custom event: EVT_MEMBER_UPDATED.
         :return: nothing.
         """
-        self.update_capacity()
+        self.update_capacity(sprint_days=self.text_ctrl_days.GetValue(),
+                             scrum_factor=self.text_ctrl_sfactor.GetValue())
 
 
 if __name__ == '__main__':
