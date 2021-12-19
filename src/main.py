@@ -110,7 +110,7 @@ class MyFrame(wx.Frame):
             else:
                 self.team_size = int(dialog.GetValue())
                 # Empty the filepath in case there was some content before restarting with a new estimation
-                self.text_ctrl_json.SetValue("")
+                self.text_ctrl_json.ChangeValue("")
 
                 template: str = TEMPLATE
                 resulting_json = Template(template).render(range=range(self.team_size),
@@ -142,7 +142,7 @@ class MyFrame(wx.Frame):
                 return
 
             path_name = file_dialog.GetPath()
-            self.text_ctrl_json.SetValue(path_name)
+            self.text_ctrl_json.ChangeValue(path_name)
             self.fill_content(path_name, True)
 
         self._content_not_saved = False
@@ -173,7 +173,7 @@ class MyFrame(wx.Frame):
 
         # Set capacity
         capacity: float = estimation.capacity
-        self.text_ctrl_capa.SetValue(str(capacity))
+        self.text_ctrl_capa.ChangeValue(str(capacity))
         self.update_capacity_color(capacity)
         # Set scrum factor
         self.text_ctrl_sfactor.SetValue(str(estimation.scrum_factor))
@@ -215,7 +215,7 @@ class MyFrame(wx.Frame):
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % path_name)
 
-        self.text_ctrl_json.SetValue(path_name)
+        self.text_ctrl_json.ChangeValue(path_name)
         self.save_btn.Disable()
         self._content_not_saved = False
 
@@ -234,14 +234,9 @@ class MyFrame(wx.Frame):
         Method to update the capacity text area and it's color and also the grid's local values.
         :return: nothing.
         """
-        if sprint_days is not None and scrum_factor is not None:
-            capacity = compute_capacity(self.grid._list, float(sprint_days), float(scrum_factor))
-        else:
-            capacity = compute_capacity(self.grid._list)
+        capacity = compute_capacity(self.grid._list, float(sprint_days), float(scrum_factor))
 
-        self.grid.update_local_capacity(float(sprint_days), float(scrum_factor))
-
-        self.text_ctrl_capa.SetValue(str(capacity))
+        self.text_ctrl_capa.ChangeValue(str(capacity))
 
         self.update_capacity_color(capacity)
 
@@ -275,10 +270,11 @@ class MyFrame(wx.Frame):
         raw_value = event.GetEventObject().GetValue()
 
         if Common.is_number(raw_value):
+            event.GetEventObject().ChangeValue(str(float(raw_value)))
             event.Skip()
         else:
             Common.pop_wrong_input_num(self)
-            event.GetEventObject().SetValue("0")
+            event.GetEventObject().ChangeValue("0.0")
 
         self.update_capacity(sprint_days=self.text_ctrl_days.GetValue(),
                              scrum_factor=self.text_ctrl_sfactor.GetValue())
