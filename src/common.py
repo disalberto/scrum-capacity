@@ -2,7 +2,7 @@ import wx
 
 
 class Common():
-    DEFAULT_SPRINT_DAYS: float = 15
+    DEFAULT_SPRINT_DAYS: float = 15.0
     DEFAULT_CAPACITY: float = 100.0
     DEFAULT_SCRUM_FACTOR: float = 80.0
 

@@ -45,7 +45,7 @@ class MyFrame(wx.Frame):
 
         self.text_ctrl_days = wx.TextCtrl(self)
         self.text_ctrl_days.SetValue(str(Common.DEFAULT_SPRINT_DAYS))
-        self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
+        self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_text_ctrl_sdays)
         self.text_ctrl_days.Disable()
         capa_sizer.Add(self.text_ctrl_days, 0, wx.ALL | wx.EXPAND, 5)
 
@@ -55,7 +55,7 @@ class MyFrame(wx.Frame):
 
         self.text_ctrl_sfactor = wx.TextCtrl(self)
         self.text_ctrl_sfactor.SetValue(str(Common.DEFAULT_SCRUM_FACTOR))
-        self.text_ctrl_sfactor.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
+        self.text_ctrl_sfactor.Bind(wx.EVT_TEXT, self.on_update_text_ctrl_sfactor)
         self.text_ctrl_sfactor.Disable()
         capa_sizer.Add(self.text_ctrl_sfactor, 0, wx.ALL | wx.EXPAND, 5)
 
@@ -258,13 +258,15 @@ class MyFrame(wx.Frame):
 
     ################################################# Events Handling ##################################################
 
-    def on_update_text_ctrl(self, event):
+    def update_text_ctrl(self, event: wx.Event, default: str):
         """
         If the content of the text boxes is updated:
             - recompute the capacity,
             - enable the button save,
             - set a boolean saying there is unsaved content.
-        :param event: the custom event: EVT_MEMBER_UPDATED.
+        In case of wrong input, default value is set.
+        :param event: the triggered event.
+        :param default: default value of the text ctrl area.
         :return: nothing.
         """
         raw_value = event.GetEventObject().GetValue()
@@ -274,10 +276,26 @@ class MyFrame(wx.Frame):
             event.Skip()
         else:
             Common.pop_wrong_input_num(self)
-            event.GetEventObject().ChangeValue("0.0")
+            event.GetEventObject().ChangeValue(default)
 
         self.update_capacity(sprint_days=self.text_ctrl_days.GetValue(),
                              scrum_factor=self.text_ctrl_sfactor.GetValue())
+
+    def on_update_text_ctrl_sfactor(self, event):
+        """
+        Update the capacity if scrum factor changed.
+        :param event: the triggered event.
+        :return: nothing.
+        """
+        self.update_text_ctrl(event, str(Common.DEFAULT_SCRUM_FACTOR))
+
+    def on_update_text_ctrl_sdays(self, event):
+        """
+        Update the capacity if sprint days changed.
+        :param event: the triggered event.
+        :return: nothing.
+        """
+        self.update_text_ctrl(event, str(Common.DEFAULT_SPRINT_DAYS))
 
     def on_update_grid(self, event):
         """
