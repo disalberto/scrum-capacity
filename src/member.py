@@ -11,6 +11,7 @@ class Member(BaseModel):
     name: str
     days_off: float
     training_days: float
+    support_days: float
     activity: float
     capacity: float
 
@@ -29,6 +30,8 @@ class Member(BaseModel):
             self.days_off = float(value)
         elif pos == int(Columns.TRAINING_DAYS):
             self.training_days = float(value)
+        elif pos == int(Columns.SUPPORT_DAYS):
+            self.support_days = float(value)
         elif pos == int(Columns.ACTIVITY):
             self.activity = float(value)
         elif pos == int(Columns.CAPACITY):
@@ -48,6 +51,8 @@ class Member(BaseModel):
             ret = str(self.days_off)
         elif pos == int(Columns.TRAINING_DAYS):
             ret = str(self.training_days)
+        elif pos == int(Columns.SUPPORT_DAYS):
+            ret = str(self.support_days)
         elif pos == int(Columns.ACTIVITY):
             ret = str(self.activity)
         else:

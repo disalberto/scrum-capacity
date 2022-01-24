@@ -40,6 +40,7 @@ class MyGrid(wx.grid.Grid):
             self.SetCellValue(self._list.index(member), int(Columns.NAME), member.name)
             self.SetCellValue(self._list.index(member), int(Columns.DAYS_OFF), str(member.days_off))
             self.SetCellValue(self._list.index(member), int(Columns.TRAINING_DAYS), str(member.training_days))
+            self.SetCellValue(self._list.index(member), int(Columns.SUPPORT_DAYS), str(member.support_days))
             self.SetCellValue(self._list.index(member), int(Columns.ACTIVITY), str(member.activity))
 
             # Initial capacity computation
