@@ -3,6 +3,8 @@ from member import MemberList
 
 
 class Estimation(BaseModel):
+    date_from: str
+    date_to: str
     sprint_days: float
     scrum_factor: float
     capacity: float

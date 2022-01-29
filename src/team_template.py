@@ -1,5 +1,7 @@
 TEMPLATE: str = """
 {
+  "date_from": "{{ date_from }}",
+  "date_to": "{{ date_to }}",
   "sprint_days": {{ sprint_days }},
   "scrum_factor": {{ scrum_factor }},
   "capacity": {{ capacity }},

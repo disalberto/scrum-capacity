@@ -1,4 +1,3 @@
-from csv import DictReader
 from multipledispatch import dispatch
 from member import Member, MemberList
 

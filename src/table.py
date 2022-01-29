@@ -67,7 +67,7 @@ class MyGrid(wx.grid.Grid):
             # Not column Name
             cell_input = self.GetCellValue(row, col)
             if not Common.is_number(cell_input):
-                Common.pop_wrong_input_num(self.GetParent())
+                Common.pop_wrong_input(self.GetParent(), "A number is required!")
                 # Back to the original value
                 cell_input = str(self._list[row].get_value(col))
                 self.SetCellValue(row, col, cell_input)
