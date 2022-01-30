@@ -12,6 +12,7 @@ class MyGrid(wx.grid.Grid):
     Class of type Grid, used to materialize the content
     of the JSON file (team members) in tabular form.
     """
+
     _list: list[Member] = None
     _sprint_days: float = Common.DEFAULT_SPRINT_DAYS
     _scrum_factor: float = Common.DEFAULT_SCRUM_FACTOR
@@ -41,18 +42,34 @@ class MyGrid(wx.grid.Grid):
 
         for member in self._list:
             self.SetCellValue(self._list.index(member), int(Columns.NAME), member.name)
-            self.SetCellValue(self._list.index(member), int(Columns.DAYS_OFF), str(member.days_off))
-            self.SetCellValue(self._list.index(member), int(Columns.TRAINING_DAYS), str(member.training_days))
-            self.SetCellValue(self._list.index(member), int(Columns.SUPPORT_DAYS), str(member.support_days))
-            self.SetCellValue(self._list.index(member), int(Columns.ACTIVITY), str(member.activity))
+            self.SetCellValue(
+                self._list.index(member), int(Columns.DAYS_OFF), str(member.days_off)
+            )
+            self.SetCellValue(
+                self._list.index(member),
+                int(Columns.TRAINING_DAYS),
+                str(member.training_days),
+            )
+            self.SetCellValue(
+                self._list.index(member),
+                int(Columns.SUPPORT_DAYS),
+                str(member.support_days),
+            )
+            self.SetCellValue(
+                self._list.index(member), int(Columns.ACTIVITY), str(member.activity)
+            )
 
             # Initial capacity computation
             capacity = member_capacity(member, self._sprint_days, self._scrum_factor)
             member.capacity = capacity
-            self.SetCellValue(self._list.index(member), int(Columns.CAPACITY), str(capacity))
+            self.SetCellValue(
+                self._list.index(member), int(Columns.CAPACITY), str(capacity)
+            )
             self.SetReadOnly(self._list.index(member), int(Columns.CAPACITY), True)
 
-            self.SetCellValue(self._list.index(member), int(Columns.NOTES), member.notes)
+            self.SetCellValue(
+                self._list.index(member), int(Columns.NOTES), member.notes
+            )
             self.SetColSize(int(Columns.NOTES), 250)
             self.ForceRefresh()
 
@@ -86,7 +103,9 @@ class MyGrid(wx.grid.Grid):
             self._list[row].set_value(col, cell_input)
 
             # Update LOCAL capacity
-            new_capacity = member_capacity(self._list[row], self._sprint_days, self._scrum_factor)
+            new_capacity = member_capacity(
+                self._list[row], self._sprint_days, self._scrum_factor
+            )
             self._list[row].set_value(int(Columns.CAPACITY), new_capacity)
             self.SetCellValue(row, int(Columns.CAPACITY), str(new_capacity))
 

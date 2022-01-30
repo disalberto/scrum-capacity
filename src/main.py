@@ -13,10 +13,9 @@ from common import *
 
 
 class MyFrame(wx.Frame):
-
     def __init__(self):
-        """ Initialize the main Frame with all the UI content. """
-        super().__init__(parent=None, title='oRatio - The Capacity Calculator')
+        """Initialize the main Frame with all the UI content."""
+        super().__init__(parent=None, title="oRatio - The Capacity Calculator")
         self.save_btn = None
         self.team_size = None
         self.grid = None
@@ -29,18 +28,24 @@ class MyFrame(wx.Frame):
         # JSON part
         json_sizer = wx.StaticBoxSizer(wx.HORIZONTAL, self, "")
 
-        new_btn = wx.Button(self, label='Start Estimation')
+        new_btn = wx.Button(self, label="Start Estimation")
         new_btn.Bind(wx.EVT_BUTTON, self.new_est)
         json_sizer.Add(new_btn, 0, wx.ALL | wx.RIGHT, 5)
 
-        load_btn = wx.Button(self, label='Load JSON file')
+        load_btn = wx.Button(self, label="Load JSON file")
         load_btn.Bind(wx.EVT_BUTTON, self.load_file)
         json_sizer.Add(load_btn, 0, wx.ALL | wx.RIGHT, 5)
 
-        self.text_ctrl_json = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_RIGHT, size=(600, -1))
+        self.text_ctrl_json = wx.TextCtrl(
+            self, style=wx.TE_READONLY | wx.TE_RIGHT, size=(600, -1)
+        )
         json_sizer.Add(self.text_ctrl_json, 0, wx.ALL | wx.EXPAND, 5)
 
-        countries_clean = [sub for sub in holidays.list_supported_countries() if not all(ele.isupper() for ele in sub)]
+        countries_clean = [
+            sub
+            for sub in holidays.list_supported_countries()
+            if not all(ele.isupper() for ele in sub)
+        ]
         self.country = wx.Choice(self, -1, choices=countries_clean)
         self.country.SetStringSelection(Common.DEFAULT_LOCATION)
         json_sizer.Add(self.country, 0, wx.ALL | wx.EXPAND, 4)
@@ -63,7 +68,9 @@ class MyFrame(wx.Frame):
         capa_sizer.Add(date_to_label, 0, wx.ALL | wx.EXPAND, 5)
 
         self.date_to = wx.adv.DatePickerCtrl(self, wx.ID_ANY, wx.DefaultDateTime)
-        self.default_it_end: datetime = datetime.date.today() + datetime.timedelta(Common.DEFAULT_SPRINT_DAYS_WEEKENDS)
+        self.default_it_end: datetime = datetime.date.today() + datetime.timedelta(
+            Common.DEFAULT_SPRINT_DAYS_WEEKENDS
+        )
         self.date_to.SetValue(self.default_it_end)
         capa_sizer.Add(self.date_to, 0, wx.ALL | wx.EXPAND, 5)
         self.Bind(wx.adv.EVT_DATE_CHANGED, self.on_date_to_changed, self.date_to)
@@ -117,8 +124,16 @@ class MyFrame(wx.Frame):
         :return False-1 if the content is not saved and the user chose to undo,
                 True if either the content is updated or the user confirmed the action.
         """
-        return self._content_not_saved and wx.MessageBox("Current content has not been saved! Proceed?",
-                                                         "Please confirm", wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO
+        return (
+            self._content_not_saved
+            and wx.MessageBox(
+                "Current content has not been saved! Proceed?",
+                "Please confirm",
+                wx.ICON_QUESTION | wx.YES_NO,
+                self,
+            )
+            == wx.NO
+        )
 
     def new_est(self, _):
         """
@@ -129,7 +144,9 @@ class MyFrame(wx.Frame):
         if self.check_not_saved():
             return
 
-        dialog = wx.TextEntryDialog(self, "Size of the team:", "", style=wx.OK | wx.CANCEL)
+        dialog = wx.TextEntryDialog(
+            self, "Size of the team:", "", style=wx.OK | wx.CANCEL
+        )
         if dialog.ShowModal() == wx.ID_OK:
 
             if not Common.is_number(dialog.GetValue()):
@@ -148,7 +165,8 @@ class MyFrame(wx.Frame):
                     range=range(self.team_size),
                     capacity=Common.DEFAULT_CAPACITY,
                     sprint_days=str(self.text_ctrl_days.GetValue()),
-                    scrum_factor=Common.DEFAULT_SCRUM_FACTOR)
+                    scrum_factor=Common.DEFAULT_SCRUM_FACTOR,
+                )
 
                 # Use the newly defined json to build the UI
                 self.fill_content(resulting_json, False)
@@ -168,8 +186,14 @@ class MyFrame(wx.Frame):
         if self.check_not_saved():
             return
 
-        with wx.FileDialog(self, "Open", "", "", "JSON files (*.json)|*.json",
-                           wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as file_dialog:
+        with wx.FileDialog(
+            self,
+            "Open",
+            "",
+            "",
+            "JSON files (*.json)|*.json",
+            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
+        ) as file_dialog:
             if file_dialog.ShowModal() == wx.ID_CANCEL:
                 return
 
@@ -187,7 +211,9 @@ class MyFrame(wx.Frame):
         :return: nothing.
         """
         try:
-            estimation = Estimation.parse_file(obj) if is_file else Estimation.parse_raw(obj)
+            estimation = (
+                Estimation.parse_file(obj) if is_file else Estimation.parse_raw(obj)
+            )
             self.grid = MyGrid(self, estimation)
             self._estimation_ongoing = True
         except IOError:
@@ -199,7 +225,7 @@ class MyFrame(wx.Frame):
             self.delete_all_children_from_sizer(self.table_sizer)
 
         self._team_table = self.table_sizer.Add(self.grid, 0, wx.ALL | wx.EXPAND, 5)
-        self.save_btn = wx.Button(self, label='Save table to JSON file')
+        self.save_btn = wx.Button(self, label="Save table to JSON file")
         self.save_btn.Bind(wx.EVT_BUTTON, self.save_file)
         self.table_sizer.Add(self.save_btn, 0, wx.LEFT, 5)
         self.SetSizerAndFit(self.main_sizer)
@@ -213,7 +239,9 @@ class MyFrame(wx.Frame):
         self.text_ctrl_sfactor.Enable()
 
         # Set Dates
-        self.date_from.SetValue(datetime.datetime.fromisoformat(str(estimation.date_from)))
+        self.date_from.SetValue(
+            datetime.datetime.fromisoformat(str(estimation.date_from))
+        )
         self.date_to.SetValue(datetime.datetime.fromisoformat(str(estimation.date_to)))
 
         # Set sprint days
@@ -235,15 +263,21 @@ class MyFrame(wx.Frame):
         :return: nothing.
         """
 
-        estimation = Estimation(date_from=Common.get_date_value(self.date_from),
-                                date_to=Common.get_date_value(self.date_to),
-                                sprint_days=float(self.text_ctrl_days.GetValue()),
-                                scrum_factor=float(self.text_ctrl_sfactor.GetValue()),
-                                capacity=float(self.text_ctrl_capa.GetValue()),
-                                member_list=MemberList(__root__=self.grid.get_list())).json()
+        estimation = Estimation(
+            date_from=Common.get_date_value(self.date_from),
+            date_to=Common.get_date_value(self.date_to),
+            sprint_days=float(self.text_ctrl_days.GetValue()),
+            scrum_factor=float(self.text_ctrl_sfactor.GetValue()),
+            capacity=float(self.text_ctrl_capa.GetValue()),
+            member_list=MemberList(__root__=self.grid.get_list()),
+        ).json()
 
-        with wx.FileDialog(self, "Save data to JSON file", wildcard="JSON files (*.json)|*.json",
-                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as file_dialog:
+        with wx.FileDialog(
+            self,
+            "Save data to JSON file",
+            wildcard="JSON files (*.json)|*.json",
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+        ) as file_dialog:
 
             if file_dialog.ShowModal() == wx.ID_CANCEL:
                 return
@@ -251,7 +285,7 @@ class MyFrame(wx.Frame):
             path_name = file_dialog.GetPath()
             today: str = datetime.date.today().strftime(Common.ISO_DATE_FORMAT)
             try:
-                with open(f'{path_name}_{today}.json', 'w') as file:
+                with open(f"{path_name}_{today}.json", "w") as file:
                     file.write(estimation)
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % path_name)
@@ -276,7 +310,9 @@ class MyFrame(wx.Frame):
         Method to update the capacity text area and it's color and also the grid's local values.
         :return: nothing.
         """
-        capacity = compute_capacity(self.grid.get_list(), float(sprint_days), float(scrum_factor))
+        capacity = compute_capacity(
+            self.grid.get_list(), float(sprint_days), float(scrum_factor)
+        )
 
         self.text_ctrl_capa.ChangeValue(str(capacity))
 
@@ -311,18 +347,27 @@ class MyFrame(wx.Frame):
         :return: nothing.
         """
         # Days without weekends
-        date_range = pd.date_range(df, dt, freq='B')
-        sprint_dates: list[str] = [d.strftime(Common.ISO_DATE_FORMAT) for d in date_range]
+        date_range = pd.date_range(df, dt, freq="B")
+        sprint_dates: list[str] = [
+            d.strftime(Common.ISO_DATE_FORMAT) for d in date_range
+        ]
 
         # Removing bank holidays
         years: list[int] = [df.year, dt.year]
         years_list: list[int] = list(set(years))
 
-        bank_holidays_dict = dict(holidays.CountryHoliday(self.country.GetString(self.country.GetCurrentSelection()),
-                                                          years_list))
-        bank_holidays_dates: list[str] = [date.strftime(Common.ISO_DATE_FORMAT) for date in bank_holidays_dict.keys()]
+        bank_holidays_dict = dict(
+            holidays.CountryHoliday(
+                self.country.GetString(self.country.GetCurrentSelection()), years_list
+            )
+        )
+        bank_holidays_dates: list[str] = [
+            date.strftime(Common.ISO_DATE_FORMAT) for date in bank_holidays_dict.keys()
+        ]
 
-        working_dates = [elem for elem in sprint_dates if elem not in bank_holidays_dates]
+        working_dates = [
+            elem for elem in sprint_dates if elem not in bank_holidays_dates
+        ]
 
         print("Initial Sprint Dates: " + str(sprint_dates))
         print("Bank Holidays Dates: " + str(bank_holidays_dates))
@@ -352,8 +397,10 @@ class MyFrame(wx.Frame):
             event.GetEventObject().ChangeValue(default)
 
         if self._estimation_ongoing:
-            self.update_capacity(sprint_days=self.text_ctrl_days.GetValue(),
-                                 scrum_factor=self.text_ctrl_sfactor.GetValue())
+            self.update_capacity(
+                sprint_days=self.text_ctrl_days.GetValue(),
+                scrum_factor=self.text_ctrl_sfactor.GetValue(),
+            )
 
     def on_update_text_ctrl_sfactor(self, event):
         """
@@ -380,8 +427,10 @@ class MyFrame(wx.Frame):
         :param _: the custom event: EVT_MEMBER_UPDATED.
         :return: nothing.
         """
-        self.update_capacity(sprint_days=self.text_ctrl_days.GetValue(),
-                             scrum_factor=self.text_ctrl_sfactor.GetValue())
+        self.update_capacity(
+            sprint_days=self.text_ctrl_days.GetValue(),
+            scrum_factor=self.text_ctrl_sfactor.GetValue(),
+        )
 
     def on_date_from_changed(self, evt):
         """
@@ -391,14 +440,21 @@ class MyFrame(wx.Frame):
         :param evt: the event triggering the method call.
         :return: nothing.
         """
-        date_from: datetime = datetime.datetime.fromisoformat(Common.get_date_value(evt))
+        date_from: datetime = datetime.datetime.fromisoformat(
+            Common.get_date_value(evt)
+        )
 
         if date_from > self.date_to.GetValue():
-            Common.pop_wrong_input(self.GetParent(), "The iteration start date cannot be after the end date!")
+            Common.pop_wrong_input(
+                self.GetParent(),
+                "The iteration start date cannot be after the end date!",
+            )
             self.date_from.SetValue(date_from.today())
 
         self.update_sprint_days(
-            date_from, datetime.datetime.fromisoformat(Common.get_date_value(self.date_to)))
+            date_from,
+            datetime.datetime.fromisoformat(Common.get_date_value(self.date_to)),
+        )
 
     def on_date_to_changed(self, evt):
         """
@@ -411,14 +467,19 @@ class MyFrame(wx.Frame):
         date_to: datetime = datetime.datetime.fromisoformat(Common.get_date_value(evt))
 
         if date_to < self.date_from.GetValue():
-            Common.pop_wrong_input(self.GetParent(), "The iteration end date cannot be before the start date!")
+            Common.pop_wrong_input(
+                self.GetParent(),
+                "The iteration end date cannot be before the start date!",
+            )
             self.date_to.SetValue(self.default_it_end)
 
         self.update_sprint_days(
-            datetime.datetime.fromisoformat(Common.get_date_value(self.date_from)), date_to)
+            datetime.datetime.fromisoformat(Common.get_date_value(self.date_from)),
+            date_to,
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = wx.App()
     frame = MyFrame()
     app.MainLoop()

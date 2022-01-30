@@ -7,7 +7,8 @@ ROUND_PRECISION = 2
 @dispatch(list)
 def compute_capacity(mList: MemberList):
     """
-    For each member of the list, it returns the total capacity of the team, with a given round precision
+    For each member of the list,
+    it returns the total capacity of the team, with a given round precision
     :param mList: the input MemberList
     :return: the total capacity
     """
@@ -47,6 +48,14 @@ def member_capacity(member: Member, sprint_days: float, scrum_factor: float):
     :return: his/her capacity
     """
     effectiveness: float = 100.0 - float(scrum_factor)
-    capa = round(max(0.0, sprint_days - member.days_off - member.training_days - member.support_days)
-                 * member.activity * effectiveness / 10000, ROUND_PRECISION)
+    capa = round(
+        max(
+            0.0,
+            sprint_days - member.days_off - member.training_days - member.support_days,
+        )
+        * member.activity
+        * effectiveness
+        / 10000,
+        ROUND_PRECISION,
+    )
     return capa

@@ -8,6 +8,7 @@ class Member(BaseModel):
     Class Member representing team member.
     He/she has a name, a number of days off, a number of training days and an activity % (0-100)
     """
+
     name: str
     days_off: float
     training_days: float
@@ -40,7 +41,7 @@ class Member(BaseModel):
         elif pos == int(Columns.NOTES):
             self.notes = value
         else:
-            raise Exception('Unhandled column')
+            raise Exception("Unhandled column")
 
     def get_value(self, pos: int):
         """
@@ -61,7 +62,7 @@ class Member(BaseModel):
         elif pos == int(Columns.NOTES):
             ret = self.notes
         else:
-            raise Exception('Unhandled column')
+            raise Exception("Unhandled column")
 
         return ret
 
@@ -70,4 +71,5 @@ class MemberList(BaseModel):
     """
     Class representing a list of Member.
     """
+
     __root__: List[Member]
