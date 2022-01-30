@@ -23,7 +23,7 @@ class MyGrid(wx.grid.Grid):
     def __init__(self, parent: wx.Frame, estimation: Estimation):
         """
         Init method to initialize a Grid with the content of a given MemberList
-        :param parent: the parent panel.
+        :param parent: the parent panel
         :param estimation: the Estimation (list and other info)
         """
         self._list = estimation.member_list.__root__

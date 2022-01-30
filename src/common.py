@@ -1,6 +1,6 @@
 import wx
 import wx.adv
-from multipledispatch import dispatch
+import multipledispatch as md
 
 
 class Common:
@@ -26,20 +26,20 @@ class Common:
         message.Destroy()
 
     @staticmethod
-    def is_number(param: str):
+    def is_number(par: str):
         """
-        Method to check if the passed argument is numeric or not.
-        :param param: input param
-        :return: True if input param is a number, False otherwise.
+        Method to check if the passed argument is numeric or not
+        :param par: input param
+        :return: True if input param is a number, False otherwise
         """
         try:
-            float(param)
+            float(par)
             return True
         except ValueError:
             return False
 
     @staticmethod
-    @dispatch(wx.adv.DatePickerCtrl)
+    @md.dispatch(wx.adv.DatePickerCtrl)
     def get_date_value(date: wx.adv.DatePickerCtrl):
         """
         Method to return a string representing the input date in ISO format
@@ -49,7 +49,7 @@ class Common:
         return str(date.GetValue().Format(Common.ISO_DATE_FORMAT))
 
     @staticmethod
-    @dispatch(wx.adv.DateEvent)
+    @md.dispatch(wx.adv.DateEvent)
     def get_date_value(evt: wx.adv.DateEvent):
         """
         Method to return a string representing the input date in ISO format

@@ -19,12 +19,12 @@ class Member(BaseModel):
 
     def set_value(self, pos: int, value: str):
         """
-        Method to update a member after he has been modified in the main table.
+        Method to update a member after he has been modified in the main table
         The if-else statement is used to identify which attribute to modify
-        with the given value.
-        :param pos: position in the table (column).
-        :param value: value in the modified cell.
-        :return: nothing.
+        with the given value
+        :param pos: position in the table (column)
+        :param value: value in the modified cell
+        :return: nothing
         """
         if pos == int(Columns.NAME):
             self.name = value
@@ -45,9 +45,9 @@ class Member(BaseModel):
 
     def get_value(self, pos: int):
         """
-        Method to get the value of the attribute of the corresponding column.
-        :param pos: position in the table (column).
-        :return: the attribute's value.
+        Method to get the value of the attribute of the corresponding column
+        :param pos: position in the table (column)
+        :return: the attribute's value
         """
         if pos == int(Columns.NAME):
             ret = self.name

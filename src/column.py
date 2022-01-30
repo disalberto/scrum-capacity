@@ -1,7 +1,7 @@
-from enum import IntEnum
+import enum
 
 
-class Columns(IntEnum):
+class Columns(enum.IntEnum):
     """
     To associate each member attribute with a table column.
     """
