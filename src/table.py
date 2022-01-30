@@ -6,6 +6,8 @@ from event import MemberUpdatedEvent
 from common import *
 from capacity import member_capacity
 
+"""Module to create and fill the main grid"""
+
 
 class MyGrid(wx.grid.Grid):
     """

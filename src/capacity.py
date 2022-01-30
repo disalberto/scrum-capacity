@@ -1,6 +1,8 @@
 from multipledispatch import dispatch
 from member import Member, MemberList
 
+"""Module to compute the capacity"""
+
 ROUND_PRECISION = 2
 
 

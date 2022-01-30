@@ -11,6 +11,8 @@ from estimation import Estimation
 from team_template import TEMPLATE
 from common import *
 
+"""Main module creating the UI"""
+
 
 class MyFrame(wx.Frame):
     def __init__(self):

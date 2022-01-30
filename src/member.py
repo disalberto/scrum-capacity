@@ -2,6 +2,8 @@ from typing import List
 from pydantic import BaseModel
 from column import Columns
 
+"""Module to describe a team member"""
+
 
 class Member(BaseModel):
     """

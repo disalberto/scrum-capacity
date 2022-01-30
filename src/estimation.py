@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from member import MemberList
 
+"""Module representing an estimation"""
+
 
 class Estimation(BaseModel):
     date_from: str

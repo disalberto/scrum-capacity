@@ -1,3 +1,5 @@
+"""Base template to load and save the estimations"""
+
 TEMPLATE: str = """
 {
   "date_from": "{{ date_from }}",

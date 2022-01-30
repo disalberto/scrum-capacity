@@ -2,6 +2,8 @@ import wx
 import wx.adv
 from multipledispatch import dispatch
 
+"""Module to group commonly used constants and functions"""
+
 
 class Common:
     DEFAULT_SPRINT_DAYS: float = 15.0
