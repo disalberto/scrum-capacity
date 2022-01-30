@@ -5,6 +5,7 @@ from estimation import Estimation
 from event import MemberUpdatedEvent
 from common import *
 from capacity import member_capacity
+from typing import List
 
 
 class MyGrid(wx.grid.Grid):
@@ -13,7 +14,7 @@ class MyGrid(wx.grid.Grid):
     of the JSON file (team members) in tabular form.
     """
 
-    _list: list[Member] = []
+    _list: List[Member] = []
     _sprint_days: float = Common.DEFAULT_SPRINT_DAYS
     _scrum_factor: float = Common.DEFAULT_SCRUM_FACTOR
 

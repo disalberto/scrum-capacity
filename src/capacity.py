@@ -1,12 +1,12 @@
 # pylint: disable=function-redefined
 
-import multipledispatch as md
+from multipledispatch import dispatch
 import member
 
 ROUND_PRECISION = 2
 
 
-@md.dispatch(list)
+@dispatch(list)
 def compute_capacity(m_list: member.MemberList):
     """
     For each member of the list,
@@ -22,7 +22,7 @@ def compute_capacity(m_list: member.MemberList):
     return round(capacity, ROUND_PRECISION)
 
 
-@md.dispatch(list, float, float)
+@dispatch(list, float, float)
 def compute_capacity(
     m_list: member.MemberList, sprint_days: float, scrum_factor: float
 ):

@@ -5,13 +5,14 @@ import datetime
 import pandas as pd
 import holidays
 import jinja2 as jinja
+from typing import List
 import capacity as cp
 import table
 import member
 import event
-import estimation as est
-import team_template as team
-import common as cm
+from estimation import Estimation
+from team_template import TEMPLATE
+from common import Common
 
 
 class MyFrame(wx.Frame):
@@ -49,7 +50,7 @@ class MyFrame(wx.Frame):
             if not all(ele.isupper() for ele in sub)
         ]
         self.country = wx.Choice(self, -1, choices=countries_clean)
-        self.country.SetStringSelection(cm.Common.DEFAULT_LOCATION)
+        self.country.SetStringSelection(Common.DEFAULT_LOCATION)
         json_sizer.Add(self.country, 0, wx.ALL | wx.EXPAND, 4)
 
         self.main_sizer.Add(json_sizer, 0, wx.ALL | wx.EXPAND, 5)
@@ -71,7 +72,7 @@ class MyFrame(wx.Frame):
 
         self.date_to = wx.adv.DatePickerCtrl(self, wx.ID_ANY, wx.DefaultDateTime)
         self.default_it_end: datetime = datetime.date.today() + datetime.timedelta(
-            cm.Common.DEFAULT_SPRINT_DAYS_WEEKENDS
+            Common.DEFAULT_SPRINT_DAYS_WEEKENDS
         )
         self.date_to.SetValue(self.default_it_end)
         capa_sizer.Add(self.date_to, 0, wx.ALL | wx.EXPAND, 5)
@@ -82,7 +83,7 @@ class MyFrame(wx.Frame):
         capa_sizer.Add(days_label, 0, wx.ALL | wx.EXPAND, 5)
 
         self.text_ctrl_days = wx.TextCtrl(self)
-        self.text_ctrl_days.SetValue(str(cm.Common.DEFAULT_SPRINT_DAYS))
+        self.text_ctrl_days.SetValue(str(Common.DEFAULT_SPRINT_DAYS))
         self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_text_ctrl_sprint_days)
         self.text_ctrl_days.Disable()
         capa_sizer.Add(self.text_ctrl_days, 0, wx.ALL | wx.EXPAND, 5)
@@ -92,7 +93,7 @@ class MyFrame(wx.Frame):
         capa_sizer.Add(s_factor_label, 0, wx.ALL | wx.RIGHT, 5)
 
         self.text_ctrl_s_factor = wx.TextCtrl(self)
-        self.text_ctrl_s_factor.SetValue(str(cm.Common.DEFAULT_SCRUM_FACTOR))
+        self.text_ctrl_s_factor.SetValue(str(Common.DEFAULT_SCRUM_FACTOR))
         self.text_ctrl_s_factor.Bind(wx.EVT_TEXT, self.on_update_text_ctrl_scrum_factor)
         self.text_ctrl_s_factor.Disable()
         capa_sizer.Add(self.text_ctrl_s_factor, 0, wx.ALL | wx.EXPAND, 5)
@@ -102,7 +103,7 @@ class MyFrame(wx.Frame):
         capa_sizer.Add(capa_label, 0, wx.ALL | wx.RIGHT, 5)
 
         self.text_ctrl_capa = wx.TextCtrl(self, style=wx.TE_READONLY)
-        self.text_ctrl_capa.SetValue(str(cm.Common.DEFAULT_CAPACITY))
+        self.text_ctrl_capa.SetValue(str(Common.DEFAULT_CAPACITY))
         self.text_ctrl_capa.SetForegroundColour(wx.RED)
         capa_sizer.Add(self.text_ctrl_capa, 0, wx.ALL | wx.EXPAND, 5)
         self.main_sizer.Add(capa_sizer, 0, wx.ALL | wx.EXPAND, 5)
@@ -151,23 +152,23 @@ class MyFrame(wx.Frame):
         )
         if dialog.ShowModal() == wx.ID_OK:
 
-            if not cm.Common.is_number(dialog.GetValue()):
-                cm.Common.pop_wrong_input(self, "A number is required!")
+            if not Common.is_number(dialog.GetValue()):
+                Common.pop_wrong_input(self, "A number is required!")
                 return
             else:
                 self.team_size = int(dialog.GetValue())
                 # Empty the filepath in case there was some content before restarting with a new estimation
                 self.text_ctrl_json.ChangeValue("")
 
-                template: str = team.TEMPLATE
+                template: str = TEMPLATE
 
                 resulting_json = jinja.Template(template).render(
-                    date_from=cm.Common.get_date_value(self.date_from),
-                    date_to=cm.Common.get_date_value(self.date_to),
+                    date_from=Common.get_date_value(self.date_from),
+                    date_to=Common.get_date_value(self.date_to),
                     range=range(self.team_size),
-                    capacity=cm.Common.DEFAULT_CAPACITY,
+                    capacity=Common.DEFAULT_CAPACITY,
                     sprint_days=str(self.text_ctrl_days.GetValue()),
-                    scrum_factor=cm.Common.DEFAULT_SCRUM_FACTOR,
+                    scrum_factor=Common.DEFAULT_SCRUM_FACTOR,
                 )
 
                 # Use the newly defined json to build the UI
@@ -214,9 +215,7 @@ class MyFrame(wx.Frame):
         """
         try:
             estimation = (
-                est.Estimation.parse_file(obj)
-                if is_file
-                else est.Estimation.parse_raw(obj)
+                Estimation.parse_file(obj) if is_file else Estimation.parse_raw(obj)
             )
             self.grid = table.MyGrid(self, estimation)
             self._estimation_ongoing = True
@@ -267,9 +266,9 @@ class MyFrame(wx.Frame):
         :return: nothing.
         """
 
-        estimation = est.Estimation(
-            date_from=cm.Common.get_date_value(self.date_from),
-            date_to=cm.Common.get_date_value(self.date_to),
+        estimation = Estimation(
+            date_from=Common.get_date_value(self.date_from),
+            date_to=Common.get_date_value(self.date_to),
             sprint_days=float(self.text_ctrl_days.GetValue()),
             scrum_factor=float(self.text_ctrl_s_factor.GetValue()),
             capacity=float(self.text_ctrl_capa.GetValue()),
@@ -287,7 +286,7 @@ class MyFrame(wx.Frame):
                 return
 
             path_name = file_dialog.GetPath()
-            today: str = datetime.date.today().strftime(cm.Common.ISO_DATE_FORMAT)
+            today: str = datetime.date.today().strftime(Common.ISO_DATE_FORMAT)
             try:
                 with open(f"{path_name}_{today}.json", "w") as file:
                     file.write(estimation)
@@ -351,22 +350,21 @@ class MyFrame(wx.Frame):
         """
         # Days without weekends
         date_range = pd.date_range(df, dt, freq="B")
-        sprint_dates: list[str] = [
-            d.strftime(cm.Common.ISO_DATE_FORMAT) for d in date_range
+        sprint_dates: List[str] = [
+            d.strftime(Common.ISO_DATE_FORMAT) for d in date_range
         ]
 
         # Removing bank holidays
-        years: list[int] = [df.year, dt.year]
-        years_list: list[int] = list(set(years))
+        years = [df.year, dt.year]
+        years_list: List[int] = list(set(years))
 
         bank_holidays_dict = dict(
             holidays.CountryHoliday(
                 self.country.GetString(self.country.GetCurrentSelection()), years_list
             )
         )
-        bank_holidays_dates: list[str] = [
-            date.strftime(cm.Common.ISO_DATE_FORMAT)
-            for date in bank_holidays_dict.keys()
+        bank_holidays_dates: List[str] = [
+            date.strftime(Common.ISO_DATE_FORMAT) for date in bank_holidays_dict.keys()
         ]
 
         working_dates = [
@@ -393,11 +391,11 @@ class MyFrame(wx.Frame):
         """
         raw_value = evt.GetEventObject().GetValue()
 
-        if cm.Common.is_number(raw_value):
+        if Common.is_number(raw_value):
             evt.GetEventObject().ChangeValue(str(float(raw_value)))
             evt.Skip()
         else:
-            cm.Common.pop_wrong_input(self, "A number is required!")
+            Common.pop_wrong_input(self, "A number is required!")
             evt.GetEventObject().ChangeValue(default)
 
         if self._estimation_ongoing:
@@ -412,7 +410,7 @@ class MyFrame(wx.Frame):
         :param evt: the triggered event
         :return: nothing
         """
-        self.update_text_ctrl(evt, str(cm.Common.DEFAULT_SCRUM_FACTOR))
+        self.update_text_ctrl(evt, str(Common.DEFAULT_SCRUM_FACTOR))
 
     def on_update_text_ctrl_sprint_days(self, evt):
         """
@@ -420,7 +418,7 @@ class MyFrame(wx.Frame):
         :param evt: the triggered event
         :return: nothing
         """
-        self.update_text_ctrl(evt, str(cm.Common.DEFAULT_SPRINT_DAYS))
+        self.update_text_ctrl(evt, str(Common.DEFAULT_SPRINT_DAYS))
 
     def on_update_grid(self, _):
         """
@@ -445,11 +443,11 @@ class MyFrame(wx.Frame):
         :return: nothing
         """
         date_from: datetime = datetime.datetime.fromisoformat(
-            cm.Common.get_date_value(evt)
+            Common.get_date_value(evt)
         )
 
         if date_from > self.date_to.GetValue():
-            cm.Common.pop_wrong_input(
+            Common.pop_wrong_input(
                 self.GetParent(),
                 "The iteration start date cannot be after the end date!",
             )
@@ -457,7 +455,7 @@ class MyFrame(wx.Frame):
 
         self.update_sprint_days(
             date_from,
-            datetime.datetime.fromisoformat(cm.Common.get_date_value(self.date_to)),
+            datetime.datetime.fromisoformat(Common.get_date_value(self.date_to)),
         )
 
     def on_date_to_changed(self, evt):
@@ -468,19 +466,17 @@ class MyFrame(wx.Frame):
         :param evt: the event triggering the method call
         :return: nothing
         """
-        date_to: datetime = datetime.datetime.fromisoformat(
-            cm.Common.get_date_value(evt)
-        )
+        date_to: datetime = datetime.datetime.fromisoformat(Common.get_date_value(evt))
 
         if date_to < self.date_from.GetValue():
-            cm.Common.pop_wrong_input(
+            Common.pop_wrong_input(
                 self.GetParent(),
                 "The iteration end date cannot be before the start date!",
             )
             self.date_to.SetValue(self.default_it_end)
 
         self.update_sprint_days(
-            datetime.datetime.fromisoformat(cm.Common.get_date_value(self.date_from)),
+            datetime.datetime.fromisoformat(Common.get_date_value(self.date_from)),
             date_to,
         )
 
