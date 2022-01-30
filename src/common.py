@@ -1,3 +1,5 @@
+# pylint: disable=function-redefined
+
 import wx
 import wx.adv
 import multipledispatch as md

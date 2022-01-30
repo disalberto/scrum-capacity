@@ -13,7 +13,7 @@ class MyGrid(wx.grid.Grid):
     of the JSON file (team members) in tabular form.
     """
 
-    _list: list[Member] = None
+    _list: list[Member] = []
     _sprint_days: float = Common.DEFAULT_SPRINT_DAYS
     _scrum_factor: float = Common.DEFAULT_SCRUM_FACTOR
 

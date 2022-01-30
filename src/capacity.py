@@ -1,3 +1,5 @@
+# pylint: disable=function-redefined
+
 import multipledispatch as md
 import member
 

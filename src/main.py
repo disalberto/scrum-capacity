@@ -1,3 +1,5 @@
+# pylint: disable=too-many-function-args
+
 import wx.adv
 import datetime
 import pandas as pd

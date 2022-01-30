@@ -22,4 +22,4 @@ jobs:
         bash dep-setup.sh
     - name: Analysing the code with pylint
       run: |
-        pylint --errors-only $(git ls-files '*.py')
+        pylint --errors-only --extension-pkg-whitelist=wx $(git ls-files '*.py')
