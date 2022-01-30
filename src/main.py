@@ -250,8 +250,9 @@ class MyFrame(wx.Frame):
                 return
 
             path_name = file_dialog.GetPath()
+            today: str = datetime.date.today().strftime(Common.ISO_DATE_FORMAT)
             try:
-                with open(path_name, 'w') as file:
+                with open(f'{path_name}_{today}.json', 'w') as file:
                     file.write(estimation)
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % path_name)
