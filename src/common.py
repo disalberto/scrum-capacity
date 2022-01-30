@@ -11,7 +11,7 @@ class Common:
     DEFAULT_SPRINT_DAYS: float = 15.0
     DEFAULT_SPRINT_DAYS_WEEKENDS: float = 21.0
     DEFAULT_CAPACITY: float = 0.0
-    DEFAULT_SCRUM_FACTOR: float = 80.0
+    DEFAULT_SCRUM_FACTOR: float = 20.0
     DEFAULT_LOCATION: str = "France"
     ISO_DATE_FORMAT: str = "%Y-%m-%d"
 
