@@ -100,7 +100,7 @@ class MyFrame(wx.Frame):
 
         # Table part
         self.table_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.main_sizer.Add(self.table_sizer, 0, wx.ALL | wx.EXPAND, 5)
+        self.main_sizer.Add(self.table_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
         self.SetSizer(self.main_sizer)
 

@@ -3,7 +3,7 @@ import wx.adv
 from multipledispatch import dispatch
 
 
-class Common():
+class Common:
     DEFAULT_SPRINT_DAYS: float = 15.0
     DEFAULT_SPRINT_DAYS_WEEKENDS: float = 21.0
     DEFAULT_CAPACITY: float = 0.0
@@ -20,9 +20,9 @@ class Common():
         message.ShowModal()
         message.Destroy()
 
-    def is_number(val: str):
+    def is_number(self: str):
         try:
-            float(val)
+            float(self)
             return True
         except ValueError:
             return False

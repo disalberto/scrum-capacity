@@ -13,7 +13,8 @@ TEMPLATE: str = """
         "training_days": 0,
         "support_days": 0,
         "activity": 0,
-        "capacity": 0
+        "capacity": 0,
+        "notes": ""
       }{{ "," if not loop.last else "" }}
     {% endfor %}
   ]

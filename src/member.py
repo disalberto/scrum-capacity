@@ -14,6 +14,7 @@ class Member(BaseModel):
     support_days: float
     activity: float
     capacity: float
+    notes: str
 
     def set_value(self, pos: int, value: str):
         """
@@ -36,6 +37,8 @@ class Member(BaseModel):
             self.activity = float(value)
         elif pos == int(Columns.CAPACITY):
             self.capacity = float(value)
+        elif pos == int(Columns.NOTES):
+            self.notes = value
         else:
             raise Exception('Unhandled column')
 
@@ -55,6 +58,8 @@ class Member(BaseModel):
             ret = str(self.support_days)
         elif pos == int(Columns.ACTIVITY):
             ret = str(self.activity)
+        elif pos == int(Columns.NOTES):
+            ret = self.notes
         else:
             raise Exception('Unhandled column')
 

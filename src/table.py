@@ -52,6 +52,10 @@ class MyGrid(wx.grid.Grid):
             self.SetCellValue(self._list.index(member), int(Columns.CAPACITY), str(capacity))
             self.SetReadOnly(self._list.index(member), int(Columns.CAPACITY), True)
 
+            self.SetCellValue(self._list.index(member), int(Columns.NOTES), member.notes)
+            self.SetColSize(int(Columns.NOTES), 250)
+            self.ForceRefresh()
+
     def update_member_list(self, event):
         """
         Method to update a given element of the list (row) with the modified content,
@@ -63,7 +67,7 @@ class MyGrid(wx.grid.Grid):
         col = event.GetCol()
         updated: bool = False
 
-        if int(Columns.NAME) == col:
+        if int(Columns.NAME) == col or int(Columns.NOTES) == col:
             cell_input = self.GetCellValue(row, col)
             updated = True
         else:

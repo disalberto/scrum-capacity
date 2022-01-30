@@ -11,3 +11,4 @@ class Columns(IntEnum):
     SUPPORT_DAYS = 3
     ACTIVITY = 4
     CAPACITY = 5
+    NOTES = 6
