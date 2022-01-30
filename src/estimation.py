@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 from member import MemberList
 
-"""Module representing an estimation"""
 
+class Estimation(BaseModel):  # pylint: disable=too-few-public-methods
+    """Class representing the estimation"""
 
-class Estimation(BaseModel):
     date_from: str
     date_to: str
     sprint_days: float

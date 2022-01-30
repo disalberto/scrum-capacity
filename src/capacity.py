@@ -1,40 +1,38 @@
 from multipledispatch import dispatch
 from member import Member, MemberList
 
-"""Module to compute the capacity"""
-
 ROUND_PRECISION = 2
 
 
 @dispatch(list)
-def compute_capacity(mList: MemberList):
+def compute_capacity(m_list: MemberList):
     """
     For each member of the list,
     it returns the total capacity of the team, with a given round precision
-    :param mList: the input MemberList
+    :param m_list: the input MemberList
     :return: the total capacity
     """
     capacity: float = 0.0
 
-    for member in mList:
+    for member in m_list:
         capacity += member.capacity
 
     return round(capacity, ROUND_PRECISION)
 
 
 @dispatch(list, float, float)
-def compute_capacity(mList: MemberList, sprint_days: float, scrum_factor: float):
+def compute_capacity(m_list: MemberList, sprint_days: float, scrum_factor: float):
     """
     For each member of the list and given a certain amount of days in the sprint,
     It returns the total capacity of the team, with a given round precision
-    :param mList: the input MemberList
+    :param m_list: the input MemberList
     :param sprint_days: number of days in the iteration
     :param scrum_factor: the % of time spent in SCRUM activities
     :return: the total capacity
     """
     capacity = 0
 
-    for member in mList:
+    for member in m_list:
         m_capa = member_capacity(member, sprint_days, scrum_factor)
         capacity += m_capa
 

@@ -2,16 +2,14 @@ import wx.adv
 import datetime
 import pandas as pd
 import holidays
-from jinja2 import Template
-from capacity import compute_capacity
-from table import MyGrid
-from member import MemberList
-from event import EVT_MEMBER_UPDATED
-from estimation import Estimation
-from team_template import TEMPLATE
-from common import *
-
-"""Main module creating the UI"""
+import jinja2 as jinja
+import capacity as cp
+import table
+import member
+import event
+import estimation as est
+import team_template as team
+import common as cm
 
 
 class MyFrame(wx.Frame):
@@ -49,7 +47,7 @@ class MyFrame(wx.Frame):
             if not all(ele.isupper() for ele in sub)
         ]
         self.country = wx.Choice(self, -1, choices=countries_clean)
-        self.country.SetStringSelection(Common.DEFAULT_LOCATION)
+        self.country.SetStringSelection(cm.Common.DEFAULT_LOCATION)
         json_sizer.Add(self.country, 0, wx.ALL | wx.EXPAND, 4)
 
         self.main_sizer.Add(json_sizer, 0, wx.ALL | wx.EXPAND, 5)
@@ -71,7 +69,7 @@ class MyFrame(wx.Frame):
 
         self.date_to = wx.adv.DatePickerCtrl(self, wx.ID_ANY, wx.DefaultDateTime)
         self.default_it_end: datetime = datetime.date.today() + datetime.timedelta(
-            Common.DEFAULT_SPRINT_DAYS_WEEKENDS
+            cm.Common.DEFAULT_SPRINT_DAYS_WEEKENDS
         )
         self.date_to.SetValue(self.default_it_end)
         capa_sizer.Add(self.date_to, 0, wx.ALL | wx.EXPAND, 5)
@@ -82,27 +80,27 @@ class MyFrame(wx.Frame):
         capa_sizer.Add(days_label, 0, wx.ALL | wx.EXPAND, 5)
 
         self.text_ctrl_days = wx.TextCtrl(self)
-        self.text_ctrl_days.SetValue(str(Common.DEFAULT_SPRINT_DAYS))
-        self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_text_ctrl_sdays)
+        self.text_ctrl_days.SetValue(str(cm.Common.DEFAULT_SPRINT_DAYS))
+        self.text_ctrl_days.Bind(wx.EVT_TEXT, self.on_update_text_ctrl_sprint_days)
         self.text_ctrl_days.Disable()
         capa_sizer.Add(self.text_ctrl_days, 0, wx.ALL | wx.EXPAND, 5)
 
-        sfactor_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
-        sfactor_label.SetLabel("Scrum Factor in %:")
-        capa_sizer.Add(sfactor_label, 0, wx.ALL | wx.RIGHT, 5)
+        s_factor_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
+        s_factor_label.SetLabel("Scrum Factor in %:")
+        capa_sizer.Add(s_factor_label, 0, wx.ALL | wx.RIGHT, 5)
 
-        self.text_ctrl_sfactor = wx.TextCtrl(self)
-        self.text_ctrl_sfactor.SetValue(str(Common.DEFAULT_SCRUM_FACTOR))
-        self.text_ctrl_sfactor.Bind(wx.EVT_TEXT, self.on_update_text_ctrl_sfactor)
-        self.text_ctrl_sfactor.Disable()
-        capa_sizer.Add(self.text_ctrl_sfactor, 0, wx.ALL | wx.EXPAND, 5)
+        self.text_ctrl_s_factor = wx.TextCtrl(self)
+        self.text_ctrl_s_factor.SetValue(str(cm.Common.DEFAULT_SCRUM_FACTOR))
+        self.text_ctrl_s_factor.Bind(wx.EVT_TEXT, self.on_update_text_ctrl_scrum_factor)
+        self.text_ctrl_s_factor.Disable()
+        capa_sizer.Add(self.text_ctrl_s_factor, 0, wx.ALL | wx.EXPAND, 5)
 
         capa_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
         capa_label.SetLabel("Total Capacity:")
         capa_sizer.Add(capa_label, 0, wx.ALL | wx.RIGHT, 5)
 
         self.text_ctrl_capa = wx.TextCtrl(self, style=wx.TE_READONLY)
-        self.text_ctrl_capa.SetValue(str(Common.DEFAULT_CAPACITY))
+        self.text_ctrl_capa.SetValue(str(cm.Common.DEFAULT_CAPACITY))
         self.text_ctrl_capa.SetForegroundColour(wx.RED)
         capa_sizer.Add(self.text_ctrl_capa, 0, wx.ALL | wx.EXPAND, 5)
         self.main_sizer.Add(capa_sizer, 0, wx.ALL | wx.EXPAND, 5)
@@ -122,9 +120,9 @@ class MyFrame(wx.Frame):
 
     def check_not_saved(self):
         """
-        Check if the current content is not saved before allowing its replacement.
-        :return False-1 if the content is not saved and the user chose to undo,
-                True if either the content is updated or the user confirmed the action.
+        Check if the current content is not saved before allowing its replacement
+        :return False-1 if the content is not saved and the user chose to undo
+                True if either the content is updated or the user confirmed the action
         """
         return (
             self._content_not_saved
@@ -139,8 +137,8 @@ class MyFrame(wx.Frame):
 
     def new_est(self, _):
         """
-        Method to initialize a new estimation with a given number of people in the team (rows).
-        :param _: the event of pressing the dedicated button.
+        Method to initialize a new estimation with a given number of people in the team (rows)
+        :param _: the event of pressing the dedicated button
         :return: nothing.
         """
         if self.check_not_saved():
@@ -151,23 +149,23 @@ class MyFrame(wx.Frame):
         )
         if dialog.ShowModal() == wx.ID_OK:
 
-            if not Common.is_number(dialog.GetValue()):
-                Common.pop_wrong_input(self, "A number is required!")
+            if not cm.Common.is_number(dialog.GetValue()):
+                cm.Common.pop_wrong_input(self, "A number is required!")
                 return
             else:
                 self.team_size = int(dialog.GetValue())
                 # Empty the filepath in case there was some content before restarting with a new estimation
                 self.text_ctrl_json.ChangeValue("")
 
-                template: str = TEMPLATE
+                template: str = team.TEMPLATE
 
-                resulting_json = Template(template).render(
-                    date_from=Common.get_date_value(self.date_from),
-                    date_to=Common.get_date_value(self.date_to),
+                resulting_json = jinja.Template(template).render(
+                    date_from=cm.Common.get_date_value(self.date_from),
+                    date_to=cm.Common.get_date_value(self.date_to),
                     range=range(self.team_size),
-                    capacity=Common.DEFAULT_CAPACITY,
+                    capacity=cm.Common.DEFAULT_CAPACITY,
                     sprint_days=str(self.text_ctrl_days.GetValue()),
-                    scrum_factor=Common.DEFAULT_SCRUM_FACTOR,
+                    scrum_factor=cm.Common.DEFAULT_SCRUM_FACTOR,
                 )
 
                 # Use the newly defined json to build the UI
@@ -178,11 +176,11 @@ class MyFrame(wx.Frame):
     def load_file(self, _):
         """
         Method that:
-            - opens a load file dialog if the corresponding button is pressed,
-            - sets the filepath in a dedicated text area,
-            - loads the file content in tabular form,
-            - triggers the capacity calculation with the original content.
-        :param _: the event of pressing the button: wx.EVT_BUTTON.
+            - opens a load file dialog if the corresponding button is pressed
+            - sets the filepath in a dedicated text area
+            - loads the file content in tabular form
+            - triggers the capacity calculation with the original content
+        :param _: the event of pressing the button: wx.EVT_BUTTON
         :return: nothing.
         """
         if self.check_not_saved():
@@ -207,16 +205,18 @@ class MyFrame(wx.Frame):
 
     def fill_content(self, obj: str, is_file: bool):
         """
-        Used to populate a Grid with a json file content and attach it to the main sizer.
-        :param obj: path of the json file.
+        Used to populate a Grid with a json file content and attach it to the main sizer
+        :param obj: path of the json file
         :param is_file: true if the input is a filepath, false if json
         :return: nothing.
         """
         try:
             estimation = (
-                Estimation.parse_file(obj) if is_file else Estimation.parse_raw(obj)
+                est.Estimation.parse_file(obj)
+                if is_file
+                else est.Estimation.parse_raw(obj)
             )
-            self.grid = MyGrid(self, estimation)
+            self.grid = table.MyGrid(self, estimation)
             self._estimation_ongoing = True
         except IOError:
             wx.LogError("Error parsing or opening '%s'." % obj)
@@ -237,8 +237,8 @@ class MyFrame(wx.Frame):
         self.text_ctrl_capa.ChangeValue(str(capacity))
         self.update_capacity_color(capacity)
         # Set scrum factor
-        self.text_ctrl_sfactor.SetValue(str(estimation.scrum_factor))
-        self.text_ctrl_sfactor.Enable()
+        self.text_ctrl_s_factor.SetValue(str(estimation.scrum_factor))
+        self.text_ctrl_s_factor.Enable()
 
         # Set Dates
         self.date_from.SetValue(
@@ -251,7 +251,7 @@ class MyFrame(wx.Frame):
         self.text_ctrl_days.Enable()
 
         # Event binding
-        self.grid.Bind(EVT_MEMBER_UPDATED, self.on_update_grid)
+        self.grid.Bind(event.EVT_MEMBER_UPDATED, self.on_update_grid)
 
         # Refresh ui
         self.save_btn.Disable()
@@ -260,18 +260,18 @@ class MyFrame(wx.Frame):
 
     def save_file(self, _):
         """
-        Method used to save the current content of the table to a JSON file.
-        :param _: the event of pressing the button: wx.EVT_BUTTON.
+        Method used to save the current content of the table to a JSON file
+        :param _: the event of pressing the button: wx.EVT_BUTTON
         :return: nothing.
         """
 
-        estimation = Estimation(
-            date_from=Common.get_date_value(self.date_from),
-            date_to=Common.get_date_value(self.date_to),
+        estimation = est.Estimation(
+            date_from=cm.Common.get_date_value(self.date_from),
+            date_to=cm.Common.get_date_value(self.date_to),
             sprint_days=float(self.text_ctrl_days.GetValue()),
-            scrum_factor=float(self.text_ctrl_sfactor.GetValue()),
+            scrum_factor=float(self.text_ctrl_s_factor.GetValue()),
             capacity=float(self.text_ctrl_capa.GetValue()),
-            member_list=MemberList(__root__=self.grid.get_list()),
+            member_list=member.MemberList(__root__=self.grid.get_list()),
         ).json()
 
         with wx.FileDialog(
@@ -285,7 +285,7 @@ class MyFrame(wx.Frame):
                 return
 
             path_name = file_dialog.GetPath()
-            today: str = datetime.date.today().strftime(Common.ISO_DATE_FORMAT)
+            today: str = datetime.date.today().strftime(cm.Common.ISO_DATE_FORMAT)
             try:
                 with open(f"{path_name}_{today}.json", "w") as file:
                     file.write(estimation)
@@ -299,9 +299,9 @@ class MyFrame(wx.Frame):
     @staticmethod
     def delete_all_children_from_sizer(sizer):
         """
-        To delete all the children from a given sizer.
-        Used to avoid multiple table in the same sizer, if a file is loaded twice.
-        :param sizer: the input sizer to be cleaned.
+        To delete all the children from a given sizer
+        Used to avoid multiple table in the same sizer, if a file is loaded twice
+        :param sizer: the input sizer to be cleaned
         :return: nothing.
         """
         for child in sizer.GetChildren():
@@ -309,10 +309,10 @@ class MyFrame(wx.Frame):
 
     def update_capacity(self, sprint_days: str = None, scrum_factor: str = None):
         """
-        Method to update the capacity text area and it's color and also the grid's local values.
+        Method to update the capacity text area, and it's color and also the grid's local values.
         :return: nothing.
         """
-        capacity = compute_capacity(
+        capacity = cp.compute_capacity(
             self.grid.get_list(), float(sprint_days), float(scrum_factor)
         )
 
@@ -325,8 +325,8 @@ class MyFrame(wx.Frame):
 
     def update_capacity_color(self, capacity: float):
         """
-        Method to update the capacity color in the UI depending on its value.
-        :param capacity: the computed or retrieved capacity.
+        Method to update the capacity color in the UI depending on its value
+        :param capacity: the computed or retrieved capacity
         :return: nothing.
         """
         if capacity > 40:
@@ -340,18 +340,17 @@ class MyFrame(wx.Frame):
         """
         Method to automatically update the number of sprint days to reflect
         the start and the end of the iteration
-        The complete range of dates is initially computed from the input iteration start and end dates.
-        Then the weekends and bank holidays are removed.
-        The length of the resulting list is used to know the real number of days in the iteration.
-
+        The complete range of dates is initially computed from the input iteration start and end dates
+        Then the weekends and bank holidays are removed
+        The length of the resulting list is used to know the real number of days in the iteration
         :param df: the iteration start date
         :param dt: the iteration end date
-        :return: nothing.
+        :return: nothing
         """
         # Days without weekends
         date_range = pd.date_range(df, dt, freq="B")
         sprint_dates: list[str] = [
-            d.strftime(Common.ISO_DATE_FORMAT) for d in date_range
+            d.strftime(cm.Common.ISO_DATE_FORMAT) for d in date_range
         ]
 
         # Removing bank holidays
@@ -364,7 +363,8 @@ class MyFrame(wx.Frame):
             )
         )
         bank_holidays_dates: list[str] = [
-            date.strftime(Common.ISO_DATE_FORMAT) for date in bank_holidays_dict.keys()
+            date.strftime(cm.Common.ISO_DATE_FORMAT)
+            for date in bank_holidays_dict.keys()
         ]
 
         working_dates = [
@@ -378,76 +378,76 @@ class MyFrame(wx.Frame):
         days: int = len(working_dates)
         self.text_ctrl_days.SetValue(str(days))
 
-    def update_text_ctrl(self, event: wx.Event, default: str):
+    def update_text_ctrl(self, evt: wx.Event, default: str):
         """
         If the content of the text boxes is updated:
-            - recompute the capacity,
-            - enable the button save,
-            - set a boolean saying there is unsaved content.
-        In case of wrong input, default value is set.
-        :param event: the triggered event.
-        :param default: default value of the text ctrl area.
-        :return: nothing.
+            - recompute the capacity
+            - enable the button save
+            - set a boolean saying there is unsaved content
+        In case of wrong input, default value is set
+        :param evt: the triggered event
+        :param default: default value of the text ctrl area
+        :return: nothing
         """
-        raw_value = event.GetEventObject().GetValue()
+        raw_value = evt.GetEventObject().GetValue()
 
-        if Common.is_number(raw_value):
-            event.GetEventObject().ChangeValue(str(float(raw_value)))
-            event.Skip()
+        if cm.Common.is_number(raw_value):
+            evt.GetEventObject().ChangeValue(str(float(raw_value)))
+            evt.Skip()
         else:
-            Common.pop_wrong_input(self, "A number is required!")
-            event.GetEventObject().ChangeValue(default)
+            cm.Common.pop_wrong_input(self, "A number is required!")
+            evt.GetEventObject().ChangeValue(default)
 
         if self._estimation_ongoing:
             self.update_capacity(
                 sprint_days=self.text_ctrl_days.GetValue(),
-                scrum_factor=self.text_ctrl_sfactor.GetValue(),
+                scrum_factor=self.text_ctrl_s_factor.GetValue(),
             )
 
-    def on_update_text_ctrl_sfactor(self, event):
+    def on_update_text_ctrl_scrum_factor(self, evt):
         """
-        Update the capacity if scrum factor changed.
-        :param event: the triggered event.
-        :return: nothing.
+        Update the capacity if scrum factor changed
+        :param evt: the triggered event
+        :return: nothing
         """
-        self.update_text_ctrl(event, str(Common.DEFAULT_SCRUM_FACTOR))
+        self.update_text_ctrl(evt, str(cm.Common.DEFAULT_SCRUM_FACTOR))
 
-    def on_update_text_ctrl_sdays(self, event):
+    def on_update_text_ctrl_sprint_days(self, evt):
         """
-        Update the capacity if sprint days changed.
-        :param event: the triggered event.
-        :return: nothing.
+        Update the capacity if sprint days changed
+        :param evt: the triggered event
+        :return: nothing
         """
-        self.update_text_ctrl(event, str(Common.DEFAULT_SPRINT_DAYS))
+        self.update_text_ctrl(evt, str(cm.Common.DEFAULT_SPRINT_DAYS))
 
     def on_update_grid(self, _):
         """
         If the content of the grid is updated:
-            - recompute the capacity,
-            - enable the button save,
-            - set a boolean saying there is unsaved content.
-        :param _: the custom event: EVT_MEMBER_UPDATED.
+            - recompute the capacity
+            - enable the button save
+            - set a boolean saying there is unsaved content
+        :param _: the custom event: EVT_MEMBER_UPDATED
         :return: nothing.
         """
         self.update_capacity(
             sprint_days=self.text_ctrl_days.GetValue(),
-            scrum_factor=self.text_ctrl_sfactor.GetValue(),
+            scrum_factor=self.text_ctrl_s_factor.GetValue(),
         )
 
     def on_date_from_changed(self, evt):
         """
         Method to update the number of sprint days and, as a consequence, the capacity, when the iteration start date
         is modified. The chosen date cannot be later than the iteration end date. If so, a popup is shown and the
-        iteration start date is set back to default (execution day).
-        :param evt: the event triggering the method call.
-        :return: nothing.
+        iteration start date is set back to default (execution day)
+        :param evt: the event triggering the method call
+        :return: nothing
         """
         date_from: datetime = datetime.datetime.fromisoformat(
-            Common.get_date_value(evt)
+            cm.Common.get_date_value(evt)
         )
 
         if date_from > self.date_to.GetValue():
-            Common.pop_wrong_input(
+            cm.Common.pop_wrong_input(
                 self.GetParent(),
                 "The iteration start date cannot be after the end date!",
             )
@@ -455,28 +455,30 @@ class MyFrame(wx.Frame):
 
         self.update_sprint_days(
             date_from,
-            datetime.datetime.fromisoformat(Common.get_date_value(self.date_to)),
+            datetime.datetime.fromisoformat(cm.Common.get_date_value(self.date_to)),
         )
 
     def on_date_to_changed(self, evt):
         """
         Method to update the number of sprint days and, as a consequence, the capacity, when the iteration end date
         is modified. The chosen date cannot be before the iteration start date. If so, a popup is shown and the
-        iteration end date is set back to default (execution day + default sprint length).
-        :param evt: the event triggering the method call.
-        :return: nothing.
+        iteration end date is set back to default (execution day + default sprint length)
+        :param evt: the event triggering the method call
+        :return: nothing
         """
-        date_to: datetime = datetime.datetime.fromisoformat(Common.get_date_value(evt))
+        date_to: datetime = datetime.datetime.fromisoformat(
+            cm.Common.get_date_value(evt)
+        )
 
         if date_to < self.date_from.GetValue():
-            Common.pop_wrong_input(
+            cm.Common.pop_wrong_input(
                 self.GetParent(),
                 "The iteration end date cannot be before the start date!",
             )
             self.date_to.SetValue(self.default_it_end)
 
         self.update_sprint_days(
-            datetime.datetime.fromisoformat(Common.get_date_value(self.date_from)),
+            datetime.datetime.fromisoformat(cm.Common.get_date_value(self.date_from)),
             date_to,
         )
 

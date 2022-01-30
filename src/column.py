@@ -1,7 +1,5 @@
 from enum import IntEnum
 
-"""Module representing the header of the Grid"""
-
 
 class Columns(IntEnum):
     """
