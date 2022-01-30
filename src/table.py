@@ -16,6 +16,9 @@ class MyGrid(wx.grid.Grid):
     _sprint_days: float = Common.DEFAULT_SPRINT_DAYS
     _scrum_factor: float = Common.DEFAULT_SCRUM_FACTOR
 
+    def get_list(self):
+        return self._list
+
     def __init__(self, parent: wx.Frame, estimation: Estimation):
         """
         Init method to initialize a Grid with the content of a given MemberList

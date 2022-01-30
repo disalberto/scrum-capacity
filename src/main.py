@@ -117,14 +117,13 @@ class MyFrame(wx.Frame):
         :return False-1 if the content is not saved and the user chose to undo,
                 True if either the content is updated or the user confirmed the action.
         """
-        return self._content_not_saved and \
-               wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
-                             wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO
+        return self._content_not_saved and wx.MessageBox("Current content has not been saved! Proceed?",
+                                                         "Please confirm", wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO
 
-    def new_est(self, event):
+    def new_est(self, _):
         """
         Method to initialize a new estimation with a given number of people in the team (rows).
-        :param event: the event of pressing the dedicated button.
+        :param _: the event of pressing the dedicated button.
         :return: nothing.
         """
         if self.check_not_saved():
@@ -156,14 +155,14 @@ class MyFrame(wx.Frame):
 
         dialog.Destroy()
 
-    def load_file(self, event):
+    def load_file(self, _):
         """
         Method that:
             - opens a load file dialog if the corresponding button is pressed,
             - sets the filepath in a dedicated text area,
             - loads the file content in tabular form,
             - triggers the capacity calculation with the original content.
-        :param event: the event of pressing the button: wx.EVT_BUTTON.
+        :param _: the event of pressing the button: wx.EVT_BUTTON.
         :return: nothing.
         """
         if self.check_not_saved():
@@ -229,10 +228,10 @@ class MyFrame(wx.Frame):
         self.main_sizer.Layout()
         self.SetSizerAndFit(self.main_sizer)
 
-    def save_file(self, event):
+    def save_file(self, _):
         """
         Method used to save the current content of the table to a JSON file.
-        :param event: the event of pressing the button: wx.EVT_BUTTON.
+        :param _: the event of pressing the button: wx.EVT_BUTTON.
         :return: nothing.
         """
 
@@ -241,7 +240,7 @@ class MyFrame(wx.Frame):
                                 sprint_days=float(self.text_ctrl_days.GetValue()),
                                 scrum_factor=float(self.text_ctrl_sfactor.GetValue()),
                                 capacity=float(self.text_ctrl_capa.GetValue()),
-                                member_list=MemberList(__root__=self.grid._list)).json()
+                                member_list=MemberList(__root__=self.grid.get_list())).json()
 
         with wx.FileDialog(self, "Save data to JSON file", wildcard="JSON files (*.json)|*.json",
                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as file_dialog:
@@ -261,7 +260,8 @@ class MyFrame(wx.Frame):
         self.save_btn.Disable()
         self._content_not_saved = False
 
-    def delete_all_children_from_sizer(self, sizer):
+    @staticmethod
+    def delete_all_children_from_sizer(sizer):
         """
         To delete all the children from a given sizer.
         Used to avoid multiple table in the same sizer, if a file is loaded twice.
@@ -276,7 +276,7 @@ class MyFrame(wx.Frame):
         Method to update the capacity text area and it's color and also the grid's local values.
         :return: nothing.
         """
-        capacity = compute_capacity(self.grid._list, float(sprint_days), float(scrum_factor))
+        capacity = compute_capacity(self.grid.get_list(), float(sprint_days), float(scrum_factor))
 
         self.text_ctrl_capa.ChangeValue(str(capacity))
 
@@ -371,13 +371,13 @@ class MyFrame(wx.Frame):
         """
         self.update_text_ctrl(event, str(Common.DEFAULT_SPRINT_DAYS))
 
-    def on_update_grid(self, event):
+    def on_update_grid(self, _):
         """
         If the content of the grid is updated:
             - recompute the capacity,
             - enable the button save,
             - set a boolean saying there is unsaved content.
-        :param event: the custom event: EVT_MEMBER_UPDATED.
+        :param _: the custom event: EVT_MEMBER_UPDATED.
         :return: nothing.
         """
         self.update_capacity(sprint_days=self.text_ctrl_days.GetValue(),
