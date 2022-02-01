@@ -13,12 +13,15 @@ import event
 from estimation import Estimation
 from team_template import TEMPLATE
 from common import Common
+from __version__ import __version__
 
 
 class MyFrame(wx.Frame):
     def __init__(self):
         """Initialize the main Frame with all the UI content."""
-        super().__init__(parent=None, title="oRatio - The Capacity Calculator")
+        super().__init__(
+            parent=None, title=f"oRatio - The Capacity Calculator - v{__version__}"
+        )
         self.save_btn = None
         self.team_size = None
         self.grid = None
