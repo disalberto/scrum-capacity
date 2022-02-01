@@ -1,10 +1,12 @@
 [![Pylint](https://github.com/disalberto/scrum-capacity/actions/workflows/pylint.yml/badge.svg)](https://github.com/disalberto/scrum-capacity/actions/workflows/pylint.yml)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![Latest tag version](https://img.shields.io/github/v/tag/disalberto/scrum-capacity)
 ![Stars of my repo](https://img.shields.io/github/stars/disalberto/scrum-capacity?style=social)
 ![Followers of my repos](https://img.shields.io/github/followers/disalberto?style=social)
 
 # oRatio - The Capacity Calculator
-***
+
 ## The need
 This small software has been designed and developed to ease the activity of a ***Scrum Master***,
 or anyone who has to deal with a team and its capacity.
@@ -20,7 +22,7 @@ Once confirmed, a table is shown with default pre-filled values.
 
 - In the top left corner, the user has to select the base country of the team.
 This will be used to retrieve the good bank-holidays.
-  - *Current limitation*: if someone in the team is working in another country, a different bank-holiday
+  - *Current limitation*: if someone in the team is working from another country, a different bank-holiday
   must be treated as a day off.
 - The user has to specify the start and end dates of the iteration for which the estimation is needed.
 Sprint/Iteration days are automatically calculated, taking into account weekends and bank holidays.
@@ -50,6 +52,19 @@ in the bottom-left part of the UI.
 
 ## Load JSON File
 - An old estimation can be loaded to make adjustments or to be used as a base for a new one, to save some time.
+
+## Pre-commit & Commitizen
+Some pre-commit checks are performed (pylint, black,...). On a recently cloned repo:
+- **pre-commit install --hook-type commit-msg**
+  - to set up the git hook scripts (more info [here](https://pre-commit.com/#install))
+- **pre-commit run --all-files**
+  - to run prec-commit checks on all files.
+  <img src="images/precommit.png" alt="Estimation" width="600">
+
+Semantic versioning is handled by **commitizen** (see [here](https://commitizen-tools.github.io/commitizen/))
+- Conventions must be used in the conmit message and the new version is chosen depending on the message prefix.
+- To update the changelog: **cz bump --changelog**
+  - New version, tag and changelog entry after each new commit/push
 
 ## Wishlist for future releases
 * Capacity with velocity integration
