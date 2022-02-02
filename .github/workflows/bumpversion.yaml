@@ -1,10 +1,12 @@
 name: Bump version
+
 on:
   push:
     branches:
       - main
+
 jobs:
-  bump_version:
+  bump-version:
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
     runs-on: ubuntu-latest
     name: "Bump version and create changelog with commitizen"
@@ -12,13 +14,12 @@ jobs:
       - name: Check out
         uses: actions/checkout@v2
         with:
+          token: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
           fetch-depth: 0
-          token: "${{ secrets.GITHUB_TOKEN }}"
-      - id: cz
-        name: Create bump and changelog
+      - name: Create bump and changelog
         uses: commitizen-tools/commitizen-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           branch: main
       - name: Print Version
         run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
