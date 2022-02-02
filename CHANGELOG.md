@@ -1,3 +1,9 @@
+## 0.2.1 (2022-02-02)
+
+### Fix
+
+- personal access tocken for version bump
+
 ## 0.2.0 (2022-02-01)
 
 ### Feat
