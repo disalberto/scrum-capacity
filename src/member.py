@@ -2,7 +2,7 @@
 
 from typing import List
 from pydantic import BaseModel
-from column import Columns
+from column import TeamColumns
 
 
 class Member(BaseModel):
@@ -28,19 +28,19 @@ class Member(BaseModel):
         :param value: value in the modified cell
         :return: nothing
         """
-        if pos == int(Columns.NAME):
+        if pos == int(TeamColumns.NAME):
             self.name = value
-        elif pos == int(Columns.DAYS_OFF):
+        elif pos == int(TeamColumns.DAYS_OFF):
             self.days_off = float(value)
-        elif pos == int(Columns.TRAINING_DAYS):
+        elif pos == int(TeamColumns.TRAINING_DAYS):
             self.training_days = float(value)
-        elif pos == int(Columns.SUPPORT_DAYS):
+        elif pos == int(TeamColumns.SUPPORT_DAYS):
             self.support_days = float(value)
-        elif pos == int(Columns.ACTIVITY):
+        elif pos == int(TeamColumns.ACTIVITY):
             self.activity = float(value)
-        elif pos == int(Columns.CAPACITY):
+        elif pos == int(TeamColumns.CAPACITY):
             self.capacity = float(value)
-        elif pos == int(Columns.NOTES):
+        elif pos == int(TeamColumns.NOTES):
             self.notes = value
         else:
             raise Exception("Unhandled column")
@@ -51,17 +51,17 @@ class Member(BaseModel):
         :param pos: position in the table (column)
         :return: the attribute's value
         """
-        if pos == int(Columns.NAME):
+        if pos == int(TeamColumns.NAME):
             ret = self.name
-        elif pos == int(Columns.DAYS_OFF):
+        elif pos == int(TeamColumns.DAYS_OFF):
             ret = str(self.days_off)
-        elif pos == int(Columns.TRAINING_DAYS):
+        elif pos == int(TeamColumns.TRAINING_DAYS):
             ret = str(self.training_days)
-        elif pos == int(Columns.SUPPORT_DAYS):
+        elif pos == int(TeamColumns.SUPPORT_DAYS):
             ret = str(self.support_days)
-        elif pos == int(Columns.ACTIVITY):
+        elif pos == int(TeamColumns.ACTIVITY):
             ret = str(self.activity)
-        elif pos == int(Columns.NOTES):
+        elif pos == int(TeamColumns.NOTES):
             ret = self.notes
         else:
             raise Exception("Unhandled column")

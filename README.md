@@ -59,7 +59,7 @@ Some pre-commit checks are performed (pylint, black,...). On a recently cloned r
   - to set up the git hook scripts (more info [here](https://pre-commit.com/#install))
 - **pre-commit run --all-files**
   - to run prec-commit checks on all files.
-  <img src="images/precommit.png" alt="Estimation" width="600">
+  <img src="images/precommit.png" alt="pre-commit " width="600">
 
 Semantic versioning is handled by **commitizen** (see [here](https://commitizen-tools.github.io/commitizen/))
 - Conventions must be used in the conmit message and the new version is chosen depending on the message prefix.

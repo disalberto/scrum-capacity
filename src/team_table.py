@@ -1,5 +1,5 @@
 import wx.grid
-from column import Columns
+from column import TeamColumns
 from member import Member
 from estimation import Estimation
 from event import MemberUpdatedEvent
@@ -8,7 +8,7 @@ from capacity import member_capacity
 from typing import List
 
 
-class MyGrid(wx.grid.Grid):
+class TeamGrid(wx.grid.Grid):
     """
     Class of type Grid, used to materialize the content
     of the JSON file (team members) in tabular form.
@@ -34,44 +34,50 @@ class MyGrid(wx.grid.Grid):
         self.parentPanel = parent
 
         wx.grid.Grid.__init__(self, self.parentPanel)
-        self.SetDefaultColSize(130)
-        self.CreateGrid(len(self._list), len(Columns))
+        self.SetDefaultColSize(160)
+        self.CreateGrid(len(self._list), len(TeamColumns))
         self.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.update_member_list)
 
-        for col in Columns:
-            self.SetColLabelValue(int(col), col.name)
+        for col in TeamColumns:
+            self.SetColLabelValue(col.index, col.label)
 
         for member in self._list:
-            self.SetCellValue(self._list.index(member), int(Columns.NAME), member.name)
             self.SetCellValue(
-                self._list.index(member), int(Columns.DAYS_OFF), str(member.days_off)
+                self._list.index(member), TeamColumns.NAME.index, member.name
             )
             self.SetCellValue(
                 self._list.index(member),
-                int(Columns.TRAINING_DAYS),
+                TeamColumns.DAYS_OFF.index,
+                str(member.days_off),
+            )
+            self.SetCellValue(
+                self._list.index(member),
+                TeamColumns.TRAINING_DAYS.index,
                 str(member.training_days),
             )
             self.SetCellValue(
                 self._list.index(member),
-                int(Columns.SUPPORT_DAYS),
+                TeamColumns.SUPPORT_DAYS.index,
                 str(member.support_days),
             )
             self.SetCellValue(
-                self._list.index(member), int(Columns.ACTIVITY), str(member.activity)
+                self._list.index(member),
+                TeamColumns.ACTIVITY.index,
+                str(member.activity),
             )
 
             # Initial capacity computation
             capacity = member_capacity(member, self._sprint_days, self._scrum_factor)
             member.capacity = capacity
             self.SetCellValue(
-                self._list.index(member), int(Columns.CAPACITY), str(capacity)
+                self._list.index(member), TeamColumns.CAPACITY.index, str(capacity)
             )
-            self.SetReadOnly(self._list.index(member), int(Columns.CAPACITY), True)
+            self.SetReadOnly(self._list.index(member), TeamColumns.CAPACITY.index, True)
 
             self.SetCellValue(
-                self._list.index(member), int(Columns.NOTES), member.notes
+                self._list.index(member), TeamColumns.NOTES.index, member.notes
             )
-            self.SetColSize(int(Columns.NOTES), 250)
+            self.SetColSize(TeamColumns.NOTES.index, 250)
             self.ForceRefresh()
 
     def update_member_list(self, event):
@@ -85,7 +91,7 @@ class MyGrid(wx.grid.Grid):
         col = event.GetCol()
         updated: bool = False
 
-        if int(Columns.NAME) == col or int(Columns.NOTES) == col:
+        if TeamColumns.NAME.index == col or TeamColumns.NOTES.index == col:
             cell_input = self.GetCellValue(row, col)
             updated = True
         else:
@@ -107,8 +113,8 @@ class MyGrid(wx.grid.Grid):
             new_capacity = member_capacity(
                 self._list[row], self._sprint_days, self._scrum_factor
             )
-            self._list[row].set_value(int(Columns.CAPACITY), new_capacity)
-            self.SetCellValue(row, int(Columns.CAPACITY), str(new_capacity))
+            self._list[row].set_value(TeamColumns.CAPACITY.index, new_capacity)
+            self.SetCellValue(row, TeamColumns.CAPACITY.index, str(new_capacity))
 
         print(str(self._list))
 

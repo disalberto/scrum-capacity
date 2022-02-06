@@ -7,7 +7,7 @@ import holidays
 import jinja2 as jinja
 from typing import List
 import capacity as cp
-import table
+import team_table as table
 import member
 import event
 from estimation import Estimation
@@ -110,6 +110,10 @@ class MyFrame(wx.Frame):
         self.text_ctrl_capa.SetForegroundColour(wx.RED)
         capa_sizer.Add(self.text_ctrl_capa, 0, wx.ALL | wx.EXPAND, 5)
         self.main_sizer.Add(capa_sizer, 0, wx.ALL | wx.EXPAND, 5)
+
+        # Velocity part
+        self.velocity_sizer = wx.GridBagSizer(vgap=5, hgap=5)
+        self.main_sizer.Add(self.velocity_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
         # Table part
         self.table_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -220,7 +224,7 @@ class MyFrame(wx.Frame):
             estimation = (
                 Estimation.parse_file(obj) if is_file else Estimation.parse_raw(obj)
             )
-            self.grid = table.MyGrid(self, estimation)
+            self.grid = table.TeamGrid(self, estimation)
             self._estimation_ongoing = True
         except IOError:
             wx.LogError("Error parsing or opening '%s'." % obj)
