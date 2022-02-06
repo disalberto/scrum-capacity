@@ -1,3 +1,9 @@
+## 0.2.2 (2022-02-06)
+
+### Fix
+
+- table lables - ready for velocity dev
+
 ## 0.2.1 (2022-02-02)
 
 ### Fix
