@@ -28,19 +28,19 @@ class Member(BaseModel):
         :param value: value in the modified cell
         :return: nothing
         """
-        if pos == int(TeamColumns.NAME):
+        if pos == int(TeamColumns.NAME.index):
             self.name = value
-        elif pos == int(TeamColumns.DAYS_OFF):
+        elif pos == int(TeamColumns.DAYS_OFF.index):
             self.days_off = float(value)
-        elif pos == int(TeamColumns.TRAINING_DAYS):
+        elif pos == int(TeamColumns.TRAINING_DAYS.index):
             self.training_days = float(value)
-        elif pos == int(TeamColumns.SUPPORT_DAYS):
+        elif pos == int(TeamColumns.SUPPORT_DAYS.index):
             self.support_days = float(value)
-        elif pos == int(TeamColumns.ACTIVITY):
+        elif pos == int(TeamColumns.ACTIVITY.index):
             self.activity = float(value)
-        elif pos == int(TeamColumns.CAPACITY):
+        elif pos == int(TeamColumns.CAPACITY.index):
             self.capacity = float(value)
-        elif pos == int(TeamColumns.NOTES):
+        elif pos == int(TeamColumns.NOTES.index):
             self.notes = value
         else:
             raise Exception("Unhandled column")
@@ -51,17 +51,17 @@ class Member(BaseModel):
         :param pos: position in the table (column)
         :return: the attribute's value
         """
-        if pos == int(TeamColumns.NAME):
+        if pos == int(TeamColumns.NAME.index):
             ret = self.name
-        elif pos == int(TeamColumns.DAYS_OFF):
+        elif pos == int(TeamColumns.DAYS_OFF.index):
             ret = str(self.days_off)
-        elif pos == int(TeamColumns.TRAINING_DAYS):
+        elif pos == int(TeamColumns.TRAINING_DAYS.index):
             ret = str(self.training_days)
-        elif pos == int(TeamColumns.SUPPORT_DAYS):
+        elif pos == int(TeamColumns.SUPPORT_DAYS.index):
             ret = str(self.support_days)
-        elif pos == int(TeamColumns.ACTIVITY):
+        elif pos == int(TeamColumns.ACTIVITY.index):
             ret = str(self.activity)
-        elif pos == int(TeamColumns.NOTES):
+        elif pos == int(TeamColumns.NOTES.index):
             ret = self.notes
         else:
             raise Exception("Unhandled column")
