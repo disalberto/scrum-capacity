@@ -1,3 +1,9 @@
+## 0.2.3 (2022-02-16)
+
+### Fix
+
+- bug fix in enum preventing update on table items
+
 ## 0.2.2 (2022-02-06)
 
 ### Fix
