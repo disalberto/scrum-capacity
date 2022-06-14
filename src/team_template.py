@@ -7,6 +7,12 @@ TEMPLATE: str = """
   "sprint_days": {{ sprint_days }},
   "scrum_factor": {{ scrum_factor }},
   "capacity": {{ capacity }},
+  {% if committed_sp %}
+    "committed_sp": {{ committed_sp }},
+  {% endif %}
+  {% if delivered_sp %}
+    "delivered_sp": {{ delivered_sp }},
+  {% endif %}
   "member_list": [
     {% for i in range %}
       {

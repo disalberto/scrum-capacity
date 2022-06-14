@@ -112,8 +112,26 @@ class MyFrame(wx.Frame):
         self.main_sizer.Add(capa_sizer, 0, wx.ALL | wx.EXPAND, 5)
 
         # Velocity part
-        self.velocity_sizer = wx.GridBagSizer(vgap=5, hgap=5)
-        self.main_sizer.Add(self.velocity_sizer, 0, wx.EXPAND | wx.ALL, 5)
+        velocity_sizer = wx.StaticBoxSizer(wx.HORIZONTAL, self, "")
+        self.main_sizer.Add(velocity_sizer, 0, wx.EXPAND | wx.ALL, 5)
+
+        commitment_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
+        commitment_label.SetLabel("Committed SPs:")
+        velocity_sizer.Add(commitment_label, 0, wx.ALL | wx.RIGHT, 5)
+
+        self.text_ctrl_commitment = wx.TextCtrl(self)
+        self.text_ctrl_commitment.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
+        self.text_ctrl_commitment.Disable()
+        velocity_sizer.Add(self.text_ctrl_commitment, 0, wx.ALL | wx.EXPAND, 5)
+
+        delivered_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
+        delivered_label.SetLabel("Delivered SPs:")
+        velocity_sizer.Add(delivered_label, 0, wx.ALL | wx.RIGHT, 5)
+
+        self.text_ctrl_delivered = wx.TextCtrl(self)
+        self.text_ctrl_delivered.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
+        self.text_ctrl_delivered.Disable()
+        velocity_sizer.Add(self.text_ctrl_delivered, 0, wx.ALL | wx.EXPAND, 5)
 
         # Table part
         self.table_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -244,6 +262,19 @@ class MyFrame(wx.Frame):
         capacity: float = estimation.capacity
         self.text_ctrl_capa.ChangeValue(str(capacity))
         self.update_capacity_color(capacity)
+
+        # Set committed SPs
+        committed_sp: int = estimation.committed_sp
+        if committed_sp is not None:
+            self.text_ctrl_commitment.ChangeValue(str(committed_sp))
+        self.text_ctrl_commitment.Enable()
+
+        # Set delivered SPs
+        delivered_sp: int = estimation.delivered_sp
+        if delivered_sp is not None:
+            self.text_ctrl_delivered.ChangeValue(str(delivered_sp))
+        self.text_ctrl_delivered.Enable()
+
         # Set scrum factor
         self.text_ctrl_s_factor.SetValue(str(estimation.scrum_factor))
         self.text_ctrl_s_factor.Enable()
@@ -279,6 +310,12 @@ class MyFrame(wx.Frame):
             sprint_days=float(self.text_ctrl_days.GetValue()),
             scrum_factor=float(self.text_ctrl_s_factor.GetValue()),
             capacity=float(self.text_ctrl_capa.GetValue()),
+            committed_sp=None
+            if not self.text_ctrl_commitment.GetValue()
+            else int(self.text_ctrl_commitment.GetValue()),
+            delivered_sp=None
+            if not self.text_ctrl_delivered.GetValue()
+            else int(self.text_ctrl_delivered.GetValue()),
             member_list=member.MemberList(__root__=self.grid.get_list()),
         ).json()
 
@@ -399,7 +436,7 @@ class MyFrame(wx.Frame):
         raw_value = evt.GetEventObject().GetValue()
 
         if Common.is_number(raw_value):
-            evt.GetEventObject().ChangeValue(str(float(raw_value)))
+            evt.GetEventObject().ChangeValue(str(raw_value))
             evt.Skip()
         else:
             Common.pop_wrong_input(self, "A number is required!")
@@ -426,6 +463,14 @@ class MyFrame(wx.Frame):
         :return: nothing
         """
         self.update_text_ctrl(evt, str(Common.DEFAULT_SPRINT_DAYS))
+
+    def on_update_text_ctrl(self, evt):
+        """
+        Enable the save button if optional information are provided
+        :param evt: the triggered event
+        :return: nothing
+        """
+        self.update_text_ctrl(evt, None)
 
     def on_update_grid(self, _):
         """

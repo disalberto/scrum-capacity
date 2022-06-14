@@ -68,3 +68,5 @@ Semantic versioning is handled by **commitizen** (see [here](https://commitizen-
 
 ## Wishlist for future releases
 * Capacity with velocity integration
+* Rename file with date issue
+* Add/remove team members
