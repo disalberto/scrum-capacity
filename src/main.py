@@ -267,12 +267,16 @@ class MyFrame(wx.Frame):
         committed_sp: int = estimation.committed_sp
         if committed_sp is not None:
             self.text_ctrl_commitment.ChangeValue(str(committed_sp))
+        else:
+            self.text_ctrl_commitment.Clear()
         self.text_ctrl_commitment.Enable()
 
         # Set delivered SPs
         delivered_sp: int = estimation.delivered_sp
         if delivered_sp is not None:
             self.text_ctrl_delivered.ChangeValue(str(delivered_sp))
+        else:
+            self.text_ctrl_delivered.Clear()
         self.text_ctrl_delivered.Enable()
 
         # Set scrum factor
@@ -435,7 +439,7 @@ class MyFrame(wx.Frame):
         """
         raw_value = evt.GetEventObject().GetValue()
 
-        if Common.is_number(raw_value):
+        if not str(raw_value) or Common.is_number(raw_value):
             evt.GetEventObject().ChangeValue(str(raw_value))
             evt.Skip()
         else:

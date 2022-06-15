@@ -1,9 +1,8 @@
 # pylint: disable=function-redefined
 
 from multipledispatch import dispatch
+from common import Common
 import member
-
-ROUND_PRECISION = 2
 
 
 @dispatch(list)
@@ -19,7 +18,7 @@ def compute_capacity(m_list: member.MemberList):
     for mbr in m_list:
         capacity += mbr.capacity
 
-    return round(capacity, ROUND_PRECISION)
+    return round(capacity, Common.ROUND_PRECISION)
 
 
 @dispatch(list, float, float)
@@ -40,7 +39,7 @@ def compute_capacity(
         m_capa = member_capacity(mbr, sprint_days, scrum_factor)
         capacity += m_capa
 
-    return round(capacity, ROUND_PRECISION)
+    return round(capacity, Common.ROUND_PRECISION)
 
 
 def member_capacity(mbr: member.Member, sprint_days: float, scrum_factor: float):
@@ -60,6 +59,6 @@ def member_capacity(mbr: member.Member, sprint_days: float, scrum_factor: float)
         * mbr.activity
         * effectiveness
         / 10000,
-        ROUND_PRECISION,
+        Common.ROUND_PRECISION,
     )
     return capa
