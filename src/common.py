@@ -14,6 +14,7 @@ class Common:
     DEFAULT_CAPACITY: float = 0.0
     DEFAULT_SCRUM_FACTOR: float = 20.0
     DEFAULT_LOCATION: str = "France"
+    DEFAULT_ITERATION_DEPTH: int = 3
     ISO_DATE_FORMAT: str = "%Y-%m-%d"
     ROUND_PRECISION = 2
 

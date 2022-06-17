@@ -13,6 +13,7 @@ import event
 from estimation import Estimation
 from team_template import TEMPLATE
 from common import Common
+import velocity
 from __version__ import __version__
 
 
@@ -109,6 +110,16 @@ class MyFrame(wx.Frame):
         self.text_ctrl_capa.SetValue(str(Common.DEFAULT_CAPACITY))
         self.text_ctrl_capa.SetForegroundColour(wx.RED)
         capa_sizer.Add(self.text_ctrl_capa, 0, wx.ALL | wx.EXPAND, 5)
+
+        adj_capa_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
+        adj_capa_label.SetLabel("Adjusted Capacity:")
+        capa_sizer.Add(adj_capa_label, 0, wx.ALL | wx.RIGHT, 5)
+
+        self.text_ctrl_capa_adj = wx.TextCtrl(self, style=wx.TE_READONLY)
+        self.text_ctrl_capa_adj.SetValue(str(Common.DEFAULT_CAPACITY))
+        self.text_ctrl_capa_adj.SetForegroundColour(wx.RED)
+        capa_sizer.Add(self.text_ctrl_capa_adj, 0, wx.ALL | wx.EXPAND, 5)
+
         self.main_sizer.Add(capa_sizer, 0, wx.ALL | wx.EXPAND, 5)
 
         # Velocity part
@@ -132,6 +143,31 @@ class MyFrame(wx.Frame):
         self.text_ctrl_delivered.Bind(wx.EVT_TEXT, self.on_update_text_ctrl)
         self.text_ctrl_delivered.Disable()
         velocity_sizer.Add(self.text_ctrl_delivered, 0, wx.ALL | wx.EXPAND, 5)
+
+        depth_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
+        depth_label.SetLabel("Velocity Depth:")
+        velocity_sizer.Add(depth_label, 0, wx.ALL | wx.RIGHT, 5)
+
+        self.text_ctrl_depth = wx.TextCtrl(self)
+        self.text_ctrl_depth.SetValue(str(Common.DEFAULT_ITERATION_DEPTH))
+        self.text_ctrl_depth.Bind(wx.EVT_TEXT, self.on_update_text_ctrl_velocity_depth)
+        velocity_sizer.Add(self.text_ctrl_depth, 0, wx.ALL | wx.EXPAND, 5)
+
+        dir_btn = wx.Button(self, label="Select JSON folder")
+        dir_btn.Bind(wx.EVT_BUTTON, self.load_dir)
+        velocity_sizer.Add(dir_btn, 0, wx.ALL | wx.RIGHT, 5)
+
+        self.text_ctrl_dir = wx.TextCtrl(
+            self, style=wx.TE_READONLY | wx.TE_RIGHT, size=(400, -1)
+        )
+        velocity_sizer.Add(self.text_ctrl_dir, 0, wx.ALL | wx.EXPAND, 5)
+
+        velo_label = wx.StaticText(self, -1, style=wx.ALIGN_RIGHT)
+        velo_label.SetLabel("Team Velocity:")
+        velocity_sizer.Add(velo_label, 0, wx.ALL | wx.RIGHT, 5)
+
+        self.text_ctrl_velo = wx.TextCtrl(self, style=wx.TE_READONLY)
+        velocity_sizer.Add(self.text_ctrl_velo, 0, wx.ALL | wx.EXPAND, 5)
 
         # Table part
         self.table_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -231,6 +267,25 @@ class MyFrame(wx.Frame):
 
         self._content_not_saved = False
 
+    def load_dir(self, _):
+        """
+        Method to select a directory to be used for computing the velocity
+        :param _: the event of pressing the button: wx.EVT_BUTTON
+        :return: nothing.
+        """
+        with wx.DirDialog(
+            self,
+            "Select the JSON folder",
+            ".",
+            wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
+        ) as dir_dialog:
+            if dir_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+
+            dir_name = dir_dialog.GetPath()
+            self.text_ctrl_dir.ChangeValue(dir_name)
+            self.update_text_ctrl_velocity()
+
     def fill_content(self, obj: str, is_file: bool):
         """
         Used to populate a Grid with a json file content and attach it to the main sizer
@@ -261,7 +316,7 @@ class MyFrame(wx.Frame):
         # Set capacity
         capacity: float = estimation.capacity
         self.text_ctrl_capa.ChangeValue(str(capacity))
-        self.update_capacity_color(capacity)
+        self.update_capacity_color(self.text_ctrl_capa)
 
         # Set committed SPs
         committed_sp: int = estimation.committed_sp
@@ -367,23 +422,27 @@ class MyFrame(wx.Frame):
 
         self.text_ctrl_capa.ChangeValue(str(capacity))
 
-        self.update_capacity_color(capacity)
+        self.update_capacity_color(self.text_ctrl_capa)
 
         self.save_btn.Enable()
         self._content_not_saved = True
 
-    def update_capacity_color(self, capacity: float):
+        # If the capacity has changed, update the adjusted capacity as well
+        self.update_adjusted_capacity()
+
+    def update_capacity_color(self, text_ctrl: wx.TextCtrl):
         """
         Method to update the capacity color in the UI depending on its value
-        :param capacity: the computed or retrieved capacity
+        :param text_ctrl: the wx.TextCtrl to update
         :return: nothing.
         """
+        capacity: float = float(text_ctrl.GetValue())
         if capacity > 40:
-            self.text_ctrl_capa.SetForegroundColour(wx.GREEN)
+            text_ctrl.SetForegroundColour(wx.GREEN)
         elif capacity > 20:
-            self.text_ctrl_capa.SetForegroundColour(wx.YELLOW)
+            text_ctrl.SetForegroundColour(wx.YELLOW)
         else:
-            self.text_ctrl_capa.SetForegroundColour(wx.RED)
+            text_ctrl.SetForegroundColour(wx.RED)
 
     def update_sprint_days(self, df, dt):
         """
@@ -426,13 +485,10 @@ class MyFrame(wx.Frame):
         days: int = len(working_dates)
         self.text_ctrl_days.SetValue(str(days))
 
-    def update_text_ctrl(self, evt: wx.Event, default: str):
+    def check_number_or_null(self, evt: wx.Event, default: str):
         """
-        If the content of the text boxes is updated:
-            - recompute the capacity
-            - enable the button save
-            - set a boolean saying there is unsaved content
-        In case of wrong input, default value is set
+        Check if the inserted value is a number or an empty string
+        Set the default value otherwise
         :param evt: the triggered event
         :param default: default value of the text ctrl area
         :return: nothing
@@ -446,11 +502,59 @@ class MyFrame(wx.Frame):
             Common.pop_wrong_input(self, "A number is required!")
             evt.GetEventObject().ChangeValue(default)
 
+    def update_text_ctrl_capacity(self, evt: wx.Event, default: str):
+        """
+        If the content of the text boxes is updated:
+            - recompute the capacity
+            - enable the button save
+            - set a boolean saying there is unsaved content
+        In case of wrong input, default value is set
+        :param evt: the triggered event
+        :param default: default value of the text ctrl area
+        :return: nothing
+        """
+        self.check_number_or_null(evt, default)
+
         if self._estimation_ongoing:
             self.update_capacity(
                 sprint_days=self.text_ctrl_days.GetValue(),
                 scrum_factor=self.text_ctrl_s_factor.GetValue(),
             )
+
+    def update_text_ctrl_velocity(self):
+        """
+        If the iteration depth has changed, recompute the team velocity
+        :param evt: the triggered event
+        :param default: default value of the text ctrl area
+        :return: nothing
+        """
+        dir_name: str = self.text_ctrl_dir.GetValue()
+        iteration_depth: int = self.text_ctrl_depth.GetValue()
+
+        if dir_name and Common.is_number(iteration_depth):
+            vel: float = velocity.compute_velocity(dir_name, int(iteration_depth))
+            self.text_ctrl_velo.SetValue(str(vel))
+        else:
+            self.text_ctrl_velo.SetValue("")
+
+        self.update_adjusted_capacity()
+
+    def update_adjusted_capacity(self):
+        """
+        Update the adjusted capacity lable with the result
+        of the product between the actual capacity and the velocity
+        """
+        vel: str = self.text_ctrl_velo.GetValue()
+        if vel:
+            self.text_ctrl_capa_adj.SetValue(
+                str(
+                    round(
+                        float(self.text_ctrl_capa.GetValue()) * float(vel),
+                        Common.ROUND_PRECISION,
+                    )
+                )
+            )
+        self.update_capacity_color(self.text_ctrl_capa_adj)
 
     def on_update_text_ctrl_scrum_factor(self, evt):
         """
@@ -458,7 +562,7 @@ class MyFrame(wx.Frame):
         :param evt: the triggered event
         :return: nothing
         """
-        self.update_text_ctrl(evt, str(Common.DEFAULT_SCRUM_FACTOR))
+        self.update_text_ctrl_capacity(evt, str(Common.DEFAULT_SCRUM_FACTOR))
 
     def on_update_text_ctrl_sprint_days(self, evt):
         """
@@ -466,7 +570,16 @@ class MyFrame(wx.Frame):
         :param evt: the triggered event
         :return: nothing
         """
-        self.update_text_ctrl(evt, str(Common.DEFAULT_SPRINT_DAYS))
+        self.update_text_ctrl_capacity(evt, str(Common.DEFAULT_SPRINT_DAYS))
+
+    def on_update_text_ctrl_velocity_depth(self, evt):
+        """
+        Update the velocity if iteration depth changed
+        :param evt: the triggered event
+        :return: nothing
+        """
+        self.check_number_or_null(evt, str(Common.DEFAULT_ITERATION_DEPTH))
+        self.update_text_ctrl_velocity()
 
     def on_update_text_ctrl(self, evt):
         """
@@ -474,7 +587,7 @@ class MyFrame(wx.Frame):
         :param evt: the triggered event
         :return: nothing
         """
-        self.update_text_ctrl(evt, None)
+        self.check_number_or_null(evt, None)
 
     def on_update_grid(self, _):
         """
