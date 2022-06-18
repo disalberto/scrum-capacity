@@ -53,13 +53,33 @@ in the bottom-left part of the UI.
 ## Load JSON File
 - An old estimation can be loaded to make adjustments or to be used as a base for a new one, to save some time.
 
+## Team velocity
+The total capacity, based on each team member's individual capacity, can be adjusted based on the actual team's velocity.
+
+- The information on a given iteration can be complemented, adding the committed and delivered story points.
+
+  - These additional information are added in the json file, once the estimation is saved.
+  - If the information on committed and delivered story points are not filled, the json file is skipped for the velocity calculation.
+
+- The user can choose the source folder of the json files to be used for computing the velocity by clicking on the *Select JSON folder* button.
+
+- The *iteration velocity* is the result of division of the delivered and committed story points. The *team's velocity* is the average of the N iteration velocities, where N is the *Velocity Depth*.
+
+  - The user can decide how many iterations to take into account for computing the team velocity by modifying the corresponding text field.
+  - By default 3 iterations are used.
+
+Once the team's velocity is calculated, its value is shown in the right part of the window and the value of the *Adjusted Capacity* is filled.
+
+- It is the product of the total capacity and the team's velocity.
+
+
 ## Pre-commit & Commitizen
 Some pre-commit checks are performed (pylint, black,...). On a recently cloned repo:
 - **pre-commit install --hook-type commit-msg**
   - to set up the git hook scripts (more info [here](https://pre-commit.com/#install))
 - **pre-commit run --all-files**
   - to run prec-commit checks on all files.
-  <img src="images/precommit.png" alt="pre-commit " width="600">
+</br><img src="images/precommit.png" alt="pre-commit " width="600">
 
 Semantic versioning is handled by **commitizen** (see [here](https://commitizen-tools.github.io/commitizen/))
 - Conventions must be used in the conmit message and the new version is chosen depending on the message prefix.
@@ -67,4 +87,6 @@ Semantic versioning is handled by **commitizen** (see [here](https://commitizen-
   - New version, tag and changelog entry after each new commit/push
 
 ## Wishlist for future releases
-* Capacity with velocity integration
+* Capacity with velocity integration -> some diagrams?
+* Rename file with date issue
+* Add/remove team members

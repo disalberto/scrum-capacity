@@ -1,5 +1,6 @@
 # pylint: disable=function-redefined
 
+from datetime import datetime
 import wx
 import wx.adv
 import multipledispatch as md
@@ -13,7 +14,9 @@ class Common:
     DEFAULT_CAPACITY: float = 0.0
     DEFAULT_SCRUM_FACTOR: float = 20.0
     DEFAULT_LOCATION: str = "France"
+    DEFAULT_ITERATION_DEPTH: int = 3
     ISO_DATE_FORMAT: str = "%Y-%m-%d"
+    ROUND_PRECISION = 2
 
     @staticmethod
     def pop_wrong_input(parent: wx.Window, message: str):
@@ -59,3 +62,21 @@ class Common:
         :return: the ISO formatted date
         """
         return str(evt.GetDate().Format(Common.ISO_DATE_FORMAT))
+
+    @staticmethod
+    def get_str_from_datetime(date: datetime) -> str:
+        """
+        Method to convert a datetime into string with the ISO format
+        :param date input date
+        :return: the corresponding ISO formatted string
+        """
+        return str(date.strftime(Common.ISO_DATE_FORMAT))
+
+    @staticmethod
+    def get_datetime_from_string(date: str) -> datetime:
+        """
+        Method to convert a string into datetime
+        :param date input date in string ISO format
+        :return: the corresponding datetime
+        """
+        return datetime.strptime(date, Common.ISO_DATE_FORMAT)
