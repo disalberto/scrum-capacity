@@ -77,7 +77,7 @@ class TeamGrid(wx.grid.Grid):
             self.SetCellValue(
                 self._list.index(member), TeamColumns.NOTES.index, member.notes
             )
-            self.SetColSize(TeamColumns.NOTES.index, 250)
+            self.SetColSize(TeamColumns.NOTES.index, 400)
             self.ForceRefresh()
 
     def update_member_list(self, event):
