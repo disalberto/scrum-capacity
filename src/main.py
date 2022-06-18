@@ -378,18 +378,20 @@ class MyFrame(wx.Frame):
             member_list=member.MemberList(__root__=self.grid.get_list()),
         ).json()
 
+        today: str = datetime.date.today().strftime(Common.ISO_DATE_FORMAT)
+
         with wx.FileDialog(
             self,
             "Save data to JSON file",
             wildcard="JSON files (*.json)|*.json",
             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+            defaultFile=f"{today}",
         ) as file_dialog:
 
             if file_dialog.ShowModal() == wx.ID_CANCEL:
                 return
 
-            today: str = datetime.date.today().strftime(Common.ISO_DATE_FORMAT)
-            path_name = f"{file_dialog.GetPath()}_{today}.json"
+            path_name = file_dialog.GetPath()
             try:
                 with open(path_name, "w") as file:
                     file.write(estimation)
