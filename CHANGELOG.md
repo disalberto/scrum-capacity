@@ -1,3 +1,16 @@
+## 0.3.0 (2022-06-18)
+
+### Fix
+
+- date before filename
+
+### Feat
+
+- team velocity in capacity calculation
+- velocity to compute adjusted capacity
+- added velocity basic script - to be integrated
+- add variables for velocity calculation
+
 ## 0.2.3 (2022-02-16)
 
 ### Fix
